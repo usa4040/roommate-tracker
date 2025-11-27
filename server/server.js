@@ -74,14 +74,14 @@ app.delete('/api/users/:id', (req, res) => {
     const userId = req.params.id;
 
     // First delete all transactions for this user
-    db.run('DELETE FROM transactions WHERE payer_id = ?', userId, function (err) {
+    db.run('DELETE FROM transactions WHERE payer_id = ?', [userId], function (err) {
         if (err) {
             res.status(400).json({ "error": err.message });
             return;
         }
 
         // Then delete the user
-        db.run('DELETE FROM users WHERE id = ?', userId, function (err, result) {
+        db.run('DELETE FROM users WHERE id = ?', [userId], function (err, result) {
             if (err) {
                 res.status(400).json({ "error": err.message });
                 return;
