@@ -156,19 +156,32 @@ app.get('/api/balance', (req, res) => {
 
         // Calculate split (assuming equal split among all users for now)
         // We need total users count.
-        db.all("SELECT count(*) as count FROM users", (err, userRows) => {
+        db.all("SELECT count(*) as count FROM users", [], (err, userRows) => {
             if (err) {
                 res.status(400).json({ "error": err.message });
                 return;
             }
-            const userCount = userRows[0].count;
+
+            // Handle both SQLite and PostgreSQL count results
+            const userCount = parseInt(userRows[0]?.count || 0);
+
+            if (userCount === 0) {
+                res.json({
+                    "message": "success",
+                    "data": [],
+                    "total_spent": 0,
+                    "share_per_person": 0
+                });
+                return;
+            }
+
             const totalSpent = rows.reduce((acc, row) => acc + row.total_paid, 0);
             const sharePerPerson = totalSpent / userCount;
 
             const balances = {};
 
             // Initialize all users with 0
-            db.all("SELECT id FROM users", (err, allUsers) => {
+            db.all("SELECT id FROM users", [], (err, allUsers) => {
                 allUsers.forEach(u => balances[u.id] = 0);
 
                 rows.forEach(row => {
