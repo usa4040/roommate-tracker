@@ -20,9 +20,12 @@
 **主な機能:**
 - ✅ ルームメイトの管理（追加・編集・削除）
 - ✅ 経費の記録（誰が何にいくら払ったか）
+- ✅ 経費の削除（間違えて入力した経費を削除可能）
 - ✅ 自動で収支を計算し、精算額を表示
 - ✅ 取引履歴の表示
 - ✅ 日本語UI
+- ✅ PostgreSQLによるデータ永続化
+- ✅ Renderでデプロイ可能
 
 ## 📂 ディレクトリ構造
 
@@ -68,7 +71,8 @@ roommate-tracker/
 ### バックエンド
 - **Node.js** - ランタイム
 - **Express** - Webフレームワーク
-- **SQLite3** - データベース
+- **PostgreSQL** - 本番環境のデータベース（Render）
+- **SQLite3** - 開発環境のデータベース
 - **CORS** - クロスオリジン対応
 - **Nodemon** - 開発時の自動再起動
 
@@ -81,7 +85,7 @@ roommate-tracker/
 - Node.js (v20.19+ または v22.12+)
 - npm
 
-### インストール手順
+### ローカル開発環境
 
 1. **依存関係のインストール**
    ```bash
@@ -91,21 +95,26 @@ roommate-tracker/
    cd ..
    ```
 
-2. **データベースの初期化**
-   ```bash
-   cd server
-   node init-db.js
-   cd ..
-   ```
-
-3. **開発サーバーの起動**
+2. **開発サーバーの起動**
    ```bash
    npm run dev
    ```
+   - ローカルではSQLiteを自動的に使用します
+   - データベースの初期化は不要です
 
-4. **ブラウザで開く**
+3. **ブラウザで開く**
    - フロントエンド: http://localhost:5173
    - バックエンド: http://localhost:3001
+
+### 本番環境（Render）
+
+詳細な手順は以下のドキュメントを参照してください：
+- **初回デプロイ**: `DEPLOY.md`
+- **PostgreSQL設定**: `DEPLOY_POSTGRESQL.md`
+
+**デプロイ済みURL:**
+- フロントエンド: https://roommate-tracker-app.onrender.com
+- バックエンド: https://roommate-tracker-api.onrender.com
 
 ## ⚙️ 動作の仕組み
 
@@ -139,6 +148,7 @@ roommate-tracker/
 
 ### データベーススキーマ
 
+**開発環境（SQLite）:**
 ```sql
 -- ユーザーテーブル
 CREATE TABLE users (
@@ -150,6 +160,26 @@ CREATE TABLE users (
 -- 取引テーブル
 CREATE TABLE transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    payer_id INTEGER NOT NULL,
+    amount REAL NOT NULL,
+    description TEXT,
+    date TEXT,
+    FOREIGN KEY (payer_id) REFERENCES users(id)
+);
+```
+
+**本番環境（PostgreSQL）:**
+```sql
+-- ユーザーテーブル
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    avatar TEXT
+);
+
+-- 取引テーブル
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
     payer_id INTEGER NOT NULL,
     amount REAL NOT NULL,
     description TEXT,
@@ -416,6 +446,17 @@ const addTransaction = async (transaction) => {
 }
 ```
 
+#### DELETE /api/transactions/:id
+取引を削除
+
+**レスポンス:**
+```json
+{
+  "message": "deleted",
+  "changes": 1
+}
+```
+
 ### 収支関連
 
 #### GET /api/balance
@@ -485,11 +526,24 @@ try {
 
 - [ ] ユーザー認証機能
 - [ ] 経費のカテゴリ分類
+- [ ] 月別フィルター・表示
 - [ ] グラフによる可視化
 - [ ] 支払い履歴のエクスポート（CSV）
 - [ ] 複数のルームシェア管理
 - [ ] 精算リマインダー機能
 - [ ] レスポンシブデザインの改善
+- [ ] 経費の編集機能
+- [ ] 精算履歴の保存
+
+## 📊 実装済みの機能
+
+- ✅ ユーザー管理（追加・編集・削除）
+- ✅ 経費管理（追加・削除）
+- ✅ 自動収支計算
+- ✅ PostgreSQLデータ永続化
+- ✅ Renderデプロイ対応
+- ✅ 日本語UI
+- ✅ 削除確認モーダル
 
 ## 📄 ライセンス
 
