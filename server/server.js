@@ -136,6 +136,19 @@ app.post('/api/transactions', (req, res) => {
     });
 });
 
+// Delete a transaction
+app.delete('/api/transactions/:id', (req, res) => {
+    const transactionId = req.params.id;
+
+    db.run('DELETE FROM transactions WHERE id = ?', [transactionId], function (err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "deleted", changes: this.changes });
+    });
+});
+
 // Get Balance
 // Simple logic: Total paid by A, Total paid by B. 
 // If A paid 1000, B owes 500.

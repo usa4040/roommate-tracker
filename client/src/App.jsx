@@ -7,7 +7,7 @@ import UserManagement from './components/UserManagement';
 import { useData } from './hooks/useData';
 
 function App() {
-  const { users, transactions, balance, loading, error, addTransaction, addUser, updateUser, deleteUser } = useData();
+  const { users, transactions, balance, loading, error, addTransaction, addUser, updateUser, deleteUser, deleteTransaction } = useData();
 
   if (loading) {
     return (
@@ -40,7 +40,7 @@ function App() {
           onDeleteUser={deleteUser}
         />
         <AddTransaction users={users} onAdd={addTransaction} />
-        <TransactionList transactions={transactions} />
+        <TransactionList transactions={transactions} onDelete={deleteTransaction} />
       </div>
     </Layout>
   );

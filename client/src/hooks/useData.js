@@ -112,9 +112,24 @@ export const useData = () => {
         }
     };
 
+    const deleteTransaction = async (id) => {
+        try {
+            const res = await fetch(`${API_URL}/transactions/${id}`, {
+                method: 'DELETE',
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            await fetchData();
+            return true;
+        } catch (err) {
+            setError(err.message);
+            return false;
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [fetchData]);
 
-    return { users, transactions, balance, loading, error, addTransaction, addUser, updateUser, deleteUser, refresh: fetchData };
+    return { users, transactions, balance, loading, error, addTransaction, addUser, updateUser, deleteUser, deleteTransaction, refresh: fetchData };
 };
