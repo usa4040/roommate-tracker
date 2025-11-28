@@ -86,7 +86,7 @@ const AddTransaction = ({ users, onAdd }) => {
                         type="text"
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
-                        placeholder="例: 家賓、食費"
+                        placeholder="例: 家賃、食費"
                         required
                     />
                 </div>
