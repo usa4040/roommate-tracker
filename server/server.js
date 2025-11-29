@@ -177,11 +177,75 @@ app.delete('/api/transactions/:id', (req, res) => {
     });
 });
 
+// Get all payments
+app.get('/api/payments', (req, res) => {
+    const sql = `
+        SELECT p.*, 
+               u1.name as from_user_name,
+               u2.name as to_user_name
+        FROM payments p
+        JOIN users u1 ON p.from_user_id = u1.id
+        JOIN users u2 ON p.to_user_id = u2.id
+        ORDER BY date DESC
+    `;
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": rows
+        });
+    });
+});
+
+// Create a new payment
+app.post('/api/payments', (req, res) => {
+    const { from_user_id, to_user_id, amount, description, date } = req.body;
+    const sql = 'INSERT INTO payments (from_user_id, to_user_id, amount, description, date) VALUES (?,?,?,?,?)';
+    const params = [from_user_id, to_user_id, amount, description || '', date];
+
+    db.run(sql, params, function (err, result) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+
+        const newPayment = {
+            id: this.lastID,
+            ...req.body
+        };
+
+        res.json({
+            "message": "success",
+            "data": newPayment,
+            "id": this.lastID
+        });
+
+        // Notify all clients about the data update
+        io.emit('data-updated', { type: 'payment-added', data: newPayment });
+    });
+});
+
+// Delete a payment
+app.delete('/api/payments/:id', (req, res) => {
+    const paymentId = req.params.id;
+
+    db.run('DELETE FROM payments WHERE id = ?', [paymentId], function (err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "deleted", changes: this.changes });
+
+        // Notify all clients about the data update
+        io.emit('data-updated', { type: 'payment-deleted', id: paymentId });
+    });
+});
+
 // Get Balance
-// Simple logic: Total paid by A, Total paid by B. 
-// If A paid 1000, B owes 500.
-// If B paid 0, A owes 0.
-// Net: B owes A 500.
+// Calculate balance considering both transactions and payments
 app.get('/api/balance', (req, res) => {
     const sql = `
         SELECT payer_id, SUM(amount) as total_paid 
@@ -195,54 +259,82 @@ app.get('/api/balance', (req, res) => {
             return;
         }
 
-        // Calculate split (assuming equal split among all users for now)
-        // We need total users count.
-        db.all("SELECT count(*) as count FROM users", [], (err, userRows) => {
+        // Get all payments
+        const paymentsSql = `
+            SELECT from_user_id, to_user_id, SUM(amount) as total_amount
+            FROM payments
+            GROUP BY from_user_id, to_user_id
+        `;
+
+        db.all(paymentsSql, [], (err, paymentRows) => {
             if (err) {
                 res.status(400).json({ "error": err.message });
                 return;
             }
 
-            // Handle both SQLite and PostgreSQL count results
-            const userCount = parseInt(userRows[0]?.count || 0);
-
-            if (userCount === 0) {
-                res.json({
-                    "message": "success",
-                    "data": [],
-                    "total_spent": 0,
-                    "share_per_person": 0
-                });
-                return;
-            }
-
-            const totalSpent = rows.reduce((acc, row) => acc + row.total_paid, 0);
-            const sharePerPerson = totalSpent / userCount;
-
-            const balances = {};
-
-            // Initialize all users with 0
-            db.all("SELECT id FROM users", [], (err, allUsers) => {
-                allUsers.forEach(u => balances[u.id] = 0);
-
-                rows.forEach(row => {
-                    balances[row.payer_id] = row.total_paid;
-                });
-
-                const netBalances = [];
-                for (const [userId, paid] of Object.entries(balances)) {
-                    netBalances.push({
-                        user_id: parseInt(userId),
-                        paid: paid,
-                        diff: paid - sharePerPerson // Positive means they are owed money, Negative means they owe money
-                    });
+            // Calculate split (assuming equal split among all users for now)
+            // We need total users count.
+            db.all("SELECT count(*) as count FROM users", [], (err, userRows) => {
+                if (err) {
+                    res.status(400).json({ "error": err.message });
+                    return;
                 }
 
-                res.json({
-                    "message": "success",
-                    "data": netBalances,
-                    "total_spent": totalSpent,
-                    "share_per_person": sharePerPerson
+                // Handle both SQLite and PostgreSQL count results
+                const userCount = parseInt(userRows[0]?.count || 0);
+
+                if (userCount === 0) {
+                    res.json({
+                        "message": "success",
+                        "data": [],
+                        "total_spent": 0,
+                        "share_per_person": 0
+                    });
+                    return;
+                }
+
+                const totalSpent = rows.reduce((acc, row) => acc + row.total_paid, 0);
+                const sharePerPerson = totalSpent / userCount;
+
+                const balances = {};
+
+                // Initialize all users with 0
+                db.all("SELECT id FROM users", [], (err, allUsers) => {
+                    allUsers.forEach(u => balances[u.id] = 0);
+
+                    // Add transaction amounts
+                    rows.forEach(row => {
+                        balances[row.payer_id] = row.total_paid;
+                    });
+
+                    // Adjust for payments
+                    // When user A pays user B, A's balance decreases and B's balance increases
+                    paymentRows.forEach(payment => {
+                        const fromId = payment.from_user_id;
+                        const toId = payment.to_user_id;
+                        const amount = payment.total_amount;
+
+                        // The person who paid (from) has paid more towards settling
+                        balances[fromId] = (balances[fromId] || 0) - amount;
+                        // The person who received (to) has received payment
+                        balances[toId] = (balances[toId] || 0) + amount;
+                    });
+
+                    const netBalances = [];
+                    for (const [userId, paid] of Object.entries(balances)) {
+                        netBalances.push({
+                            user_id: parseInt(userId),
+                            paid: paid,
+                            diff: paid - sharePerPerson // Positive means they are owed money, Negative means they owe money
+                        });
+                    }
+
+                    res.json({
+                        "message": "success",
+                        "data": netBalances,
+                        "total_spent": totalSpent,
+                        "share_per_person": sharePerPerson
+                    });
                 });
             });
         });

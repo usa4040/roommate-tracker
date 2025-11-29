@@ -7,6 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 export const useData = () => {
     const [users, setUsers] = useState([]);
     const [transactions, setTransactions] = useState([]);
+    const [payments, setPayments] = useState([]);
     const [balance, setBalance] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,22 +15,26 @@ export const useData = () => {
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            const [usersRes, transRes, balRes] = await Promise.all([
+            const [usersRes, transRes, paymentsRes, balRes] = await Promise.all([
                 fetch(`${API_URL}/users`),
                 fetch(`${API_URL}/transactions`),
+                fetch(`${API_URL}/payments`),
                 fetch(`${API_URL}/balance`)
             ]);
 
             const usersData = await usersRes.json();
             const transData = await transRes.json();
+            const paymentsData = await paymentsRes.json();
             const balData = await balRes.json();
 
             if (usersData.error) throw new Error(usersData.error);
             if (transData.error) throw new Error(transData.error);
+            if (paymentsData.error) throw new Error(paymentsData.error);
             if (balData.error) throw new Error(balData.error);
 
             setUsers(usersData.data);
             setTransactions(transData.data);
+            setPayments(paymentsData.data);
             setBalance(balData.data);
         } catch (err) {
             setError(err.message);
@@ -129,6 +134,40 @@ export const useData = () => {
         }
     };
 
+    const addPayment = async (payment) => {
+        try {
+            const res = await fetch(`${API_URL}/payments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payment),
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            await fetchData();
+            return true;
+        } catch (err) {
+            setError(err.message);
+            return false;
+        }
+    };
+
+    const deletePayment = async (id) => {
+        try {
+            const res = await fetch(`${API_URL}/payments/${id}`, {
+                method: 'DELETE',
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            await fetchData();
+            return true;
+        } catch (err) {
+            setError(err.message);
+            return false;
+        }
+    };
+
     useEffect(() => {
         fetchData();
 
@@ -147,5 +186,20 @@ export const useData = () => {
         };
     }, [fetchData]);
 
-    return { users, transactions, balance, loading, error, addTransaction, addUser, updateUser, deleteUser, deleteTransaction, refresh: fetchData };
+    return {
+        users,
+        transactions,
+        payments,
+        balance,
+        loading,
+        error,
+        addTransaction,
+        addUser,
+        updateUser,
+        deleteUser,
+        deleteTransaction,
+        addPayment,
+        deletePayment,
+        refresh: fetchData
+    };
 };

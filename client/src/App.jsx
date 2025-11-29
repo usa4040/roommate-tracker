@@ -4,10 +4,12 @@ import Dashboard from './components/Dashboard';
 import AddTransaction from './components/AddTransaction';
 import TransactionList from './components/TransactionList';
 import UserManagement from './components/UserManagement';
+import AddPayment from './components/AddPayment';
+import PaymentList from './components/PaymentList';
 import { useData } from './hooks/useData';
 
 function App() {
-  const { users, transactions, balance, loading, error, addTransaction, addUser, updateUser, deleteUser, deleteTransaction } = useData();
+  const { users, transactions, payments, balance, loading, error, addTransaction, addUser, updateUser, deleteUser, deleteTransaction, addPayment, deletePayment } = useData();
 
   if (loading) {
     return (
@@ -41,6 +43,8 @@ function App() {
         />
         <AddTransaction users={users} onAdd={addTransaction} />
         <TransactionList transactions={transactions} onDelete={deleteTransaction} />
+        <AddPayment users={users} onAdd={addPayment} />
+        <PaymentList payments={payments} onDelete={deletePayment} />
       </div>
     </Layout>
   );

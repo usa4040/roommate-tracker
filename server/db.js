@@ -36,6 +36,19 @@ if (isProduction) {
                 )
             `);
 
+      await pool.query(`
+                CREATE TABLE IF NOT EXISTS payments (
+                    id SERIAL PRIMARY KEY,
+                    from_user_id INTEGER NOT NULL,
+                    to_user_id INTEGER NOT NULL,
+                    amount REAL NOT NULL,
+                    description TEXT,
+                    date TEXT NOT NULL,
+                    FOREIGN KEY(from_user_id) REFERENCES users(id),
+                    FOREIGN KEY(to_user_id) REFERENCES users(id)
+                )
+            `);
+
       // Check if users table is empty and seed if needed
       const result = await pool.query('SELECT COUNT(*) as count FROM users');
       if (parseInt(result.rows[0].count) === 0) {
@@ -132,6 +145,17 @@ if (isProduction) {
             description TEXT NOT NULL,
             date TEXT NOT NULL,
             FOREIGN KEY(payer_id) REFERENCES users(id)
+        )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS payments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            from_user_id INTEGER NOT NULL,
+            to_user_id INTEGER NOT NULL,
+            amount REAL NOT NULL,
+            description TEXT,
+            date TEXT NOT NULL,
+            FOREIGN KEY(from_user_id) REFERENCES users(id),
+            FOREIGN KEY(to_user_id) REFERENCES users(id)
         )`);
 
     // Seed initial users if empty
