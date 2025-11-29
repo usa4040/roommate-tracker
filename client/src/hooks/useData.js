@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import socket from '../socket';
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -129,6 +131,20 @@ export const useData = () => {
 
     useEffect(() => {
         fetchData();
+
+        // Listen for real-time updates from other clients
+        const handleDataUpdate = (data) => {
+            console.log('Data updated:', data);
+            // Refresh all data when any change occurs
+            fetchData();
+        };
+
+        socket.on('data-updated', handleDataUpdate);
+
+        // Cleanup on unmount
+        return () => {
+            socket.off('data-updated', handleDataUpdate);
+        };
     }, [fetchData]);
 
     return { users, transactions, balance, loading, error, addTransaction, addUser, updateUser, deleteUser, deleteTransaction, refresh: fetchData };

@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const http = require('http');
+const { Server } = require('socket.io');
 const db = require('./db');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // CORS configuration for production
@@ -12,8 +15,22 @@ const corsOptions = {
     credentials: true
 };
 
+// Socket.IO setup with CORS
+const io = new Server(server, {
+    cors: corsOptions
+});
+
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+});
 
 // Get all users
 app.get('/api/users', (req, res) => {
@@ -128,11 +145,19 @@ app.post('/api/transactions', (req, res) => {
         // Ideally, the frontend sends the split info.
         // For now, let's just save the transaction. The balance calculation will handle the logic.
 
+        const newTransaction = {
+            id: this.lastID,
+            ...req.body
+        };
+
         res.json({
             "message": "success",
-            "data": { id: this.lastID, ...req.body },
+            "data": newTransaction,
             "id": this.lastID
         });
+
+        // Notify all clients about the data update
+        io.emit('data-updated', { type: 'transaction-added', data: newTransaction });
     });
 });
 
@@ -146,6 +171,9 @@ app.delete('/api/transactions/:id', (req, res) => {
             return;
         }
         res.json({ "message": "deleted", changes: this.changes });
+
+        // Notify all clients about the data update
+        io.emit('data-updated', { type: 'transaction-deleted', id: transactionId });
     });
 });
 
@@ -221,6 +249,6 @@ app.get('/api/balance', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
