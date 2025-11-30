@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Receipt, DollarSign } from 'lucide-react';
 
-const AddTransaction = ({ users, onAdd }) => {
+const AddTransaction = ({ users, onAddTransaction, onAddPayment }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [transactionType, setTransactionType] = useState('expense'); // 'expense' or 'payment'
     const [formData, setFormData] = useState({
         payer_id: '',
+        to_user_id: '',
         amount: '',
         description: '',
         date: new Date().toISOString().split('T')[0]
@@ -12,17 +14,31 @@ const AddTransaction = ({ users, onAdd }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.payer_id || !formData.amount || !formData.description) return;
 
-        const success = await onAdd({
-            ...formData,
-            payer_id: parseInt(formData.payer_id),
-            amount: parseFloat(formData.amount)
-        });
+        let success = false;
+        if (transactionType === 'expense') {
+            if (!formData.payer_id || !formData.amount || !formData.description) return;
+            success = await onAddTransaction({
+                payer_id: parseInt(formData.payer_id),
+                amount: parseFloat(formData.amount),
+                description: formData.description,
+                date: formData.date
+            });
+        } else {
+            if (!formData.payer_id || !formData.to_user_id || !formData.amount) return;
+            success = await onAddPayment({
+                from_user_id: parseInt(formData.payer_id),
+                to_user_id: parseInt(formData.to_user_id),
+                amount: parseFloat(formData.amount),
+                description: formData.description,
+                date: formData.date
+            });
+        }
 
         if (success) {
             setFormData({
                 payer_id: '',
+                to_user_id: '',
                 amount: '',
                 description: '',
                 date: new Date().toISOString().split('T')[0]
@@ -33,19 +49,97 @@ const AddTransaction = ({ users, onAdd }) => {
 
     if (!isOpen) {
         return (
-            <button className="btn" onClick={() => setIsOpen(true)} style={{ width: '100%', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                <PlusCircle size={20} />
-                経費を追加
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                <button
+                    className="btn"
+                    onClick={() => {
+                        setTransactionType('expense');
+                        setIsOpen(true);
+                    }}
+                    style={{ flex: 1, justifyContent: 'center' }}
+                >
+                    <Receipt size={20} />
+                    経費を追加
+                </button>
+                <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                        setTransactionType('payment');
+                        setIsOpen(true);
+                    }}
+                    style={{ flex: 1, justifyContent: 'center' }}
+                >
+                    <DollarSign size={20} />
+                    返済を記録
+                </button>
+            </div>
         );
     }
 
     return (
         <div className="card animate-fade-in">
-            <h3 style={{ marginBottom: '1rem' }}>新しい経費</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                {transactionType === 'expense' ? (
+                    <>
+                        <Receipt size={24} style={{ color: 'var(--primary)' }} />
+                        <h3 style={{ margin: 0 }}>新しい経費</h3>
+                    </>
+                ) : (
+                    <>
+                        <DollarSign size={24} style={{ color: 'var(--success)' }} />
+                        <h3 style={{ margin: 0 }}>返済を記録</h3>
+                    </>
+                )}
+            </div>
+
+            {/* Type Switcher */}
+            <div style={{
+                display: 'flex',
+                gap: '0.5rem',
+                marginBottom: '1.5rem',
+                padding: '0.25rem',
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: 'var(--radius-md)'
+            }}>
+                <button
+                    type="button"
+                    onClick={() => setTransactionType('expense')}
+                    style={{
+                        flex: 1,
+                        padding: '0.5rem',
+                        border: 'none',
+                        borderRadius: 'var(--radius)',
+                        background: transactionType === 'expense' ? 'var(--primary)' : 'transparent',
+                        color: transactionType === 'expense' ? 'white' : 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        fontWeight: '600'
+                    }}
+                >
+                    経費
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setTransactionType('payment')}
+                    style={{
+                        flex: 1,
+                        padding: '0.5rem',
+                        border: 'none',
+                        borderRadius: 'var(--radius)',
+                        background: transactionType === 'payment' ? 'var(--success)' : 'transparent',
+                        color: transactionType === 'payment' ? 'white' : 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        fontWeight: '600'
+                    }}
+                >
+                    返済
+                </button>
+            </div>
+
             <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                 <div>
-                    <label>誰が支払いましたか？</label>
+                    <label>{transactionType === 'expense' ? '誰が支払いましたか？' : '支払った人'}</label>
                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                         {users.map(u => (
                             <div
@@ -55,8 +149,8 @@ const AddTransaction = ({ users, onAdd }) => {
                                     flex: 1,
                                     padding: '0.75rem',
                                     borderRadius: 'var(--radius-md)',
-                                    border: `1px solid ${formData.payer_id === u.id ? 'var(--accent-primary)' : 'var(--glass-border)'}`,
-                                    background: formData.payer_id === u.id ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${formData.payer_id === u.id ? (transactionType === 'expense' ? 'var(--primary)' : 'var(--success)') : 'var(--glass-border)'}`,
+                                    background: formData.payer_id === u.id ? (transactionType === 'expense' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)') : 'rgba(255,255,255,0.05)',
                                     cursor: 'pointer',
                                     textAlign: 'center',
                                     transition: 'all 0.2s ease'
@@ -67,6 +161,32 @@ const AddTransaction = ({ users, onAdd }) => {
                         ))}
                     </div>
                 </div>
+
+                {transactionType === 'payment' && (
+                    <div>
+                        <label>受け取った人</label>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                            {users.filter(u => u.id !== formData.payer_id).map(u => (
+                                <div
+                                    key={u.id}
+                                    onClick={() => setFormData({ ...formData, to_user_id: u.id })}
+                                    style={{
+                                        flex: 1,
+                                        padding: '0.75rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: `1px solid ${formData.to_user_id === u.id ? 'var(--success)' : 'var(--glass-border)'}`,
+                                        background: formData.to_user_id === u.id ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.05)',
+                                        cursor: 'pointer',
+                                        textAlign: 'center',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <div style={{ fontWeight: 600 }}>{u.name}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div>
                     <label>金額 (円)</label>
@@ -81,13 +201,13 @@ const AddTransaction = ({ users, onAdd }) => {
                 </div>
 
                 <div>
-                    <label>内容</label>
+                    <label>内容{transactionType === 'payment' && '（任意）'}</label>
                     <input
                         type="text"
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
-                        placeholder="例: 家賃、食費"
-                        required
+                        placeholder={transactionType === 'expense' ? '例: 家賃、食費' : '例: 家賃の返済'}
+                        required={transactionType === 'expense'}
                     />
                 </div>
 

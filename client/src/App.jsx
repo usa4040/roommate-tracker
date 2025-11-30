@@ -4,8 +4,6 @@ import Dashboard from './components/Dashboard';
 import AddTransaction from './components/AddTransaction';
 import TransactionList from './components/TransactionList';
 import UserManagement from './components/UserManagement';
-import AddPayment from './components/AddPayment';
-import PaymentList from './components/PaymentList';
 import { useData } from './hooks/useData';
 
 function App() {
@@ -41,10 +39,17 @@ function App() {
           onUpdateUser={updateUser}
           onDeleteUser={deleteUser}
         />
-        <AddTransaction users={users} onAdd={addTransaction} />
-        <TransactionList transactions={transactions} onDelete={deleteTransaction} />
-        <AddPayment users={users} onAdd={addPayment} />
-        <PaymentList payments={payments} onDelete={deletePayment} />
+        <AddTransaction
+          users={users}
+          onAddTransaction={addTransaction}
+          onAddPayment={addPayment}
+        />
+        <TransactionList
+          transactions={transactions}
+          payments={payments}
+          onDeleteTransaction={deleteTransaction}
+          onDeletePayment={deletePayment}
+        />
       </div>
     </Layout>
   );
