@@ -1,17 +1,27 @@
 import React, { useState } from 'react';
 import { Calendar, User, Trash2, ArrowRight, Receipt } from 'lucide-react';
+import type { Transaction, Payment, TransactionOrPayment } from '../types';
 
-const TransactionList = ({ transactions, payments, onDeleteTransaction, onDeletePayment }) => {
-    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-    const [deleteType, setDeleteType] = useState(null); // 'transaction' or 'payment'
+interface TransactionListProps {
+    transactions: Transaction[];
+    payments: Payment[];
+    onDeleteTransaction: (id: number) => Promise<boolean>;
+    onDeletePayment: (id: number) => Promise<boolean>;
+}
+
+type DeleteType = 'transaction' | 'payment';
+
+const TransactionList: React.FC<TransactionListProps> = ({ transactions, payments, onDeleteTransaction, onDeletePayment }) => {
+    const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+    const [deleteType, setDeleteType] = useState<DeleteType | null>(null);
 
     // Combine transactions and payments into a single list
-    const allItems = [
-        ...(transactions || []).map(t => ({ ...t, type: 'transaction' })),
-        ...(payments || []).map(p => ({ ...p, type: 'payment' }))
-    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const allItems: TransactionOrPayment[] = [
+        ...(transactions || []).map(t => ({ ...t, type: 'transaction' as const })),
+        ...(payments || []).map(p => ({ ...p, type: 'payment' as const }))
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    const handleDelete = async () => {
+    const handleDelete = async (): Promise<void> => {
         if (deleteConfirmId && deleteType) {
             if (deleteType === 'transaction') {
                 await onDeleteTransaction(deleteConfirmId);
@@ -23,7 +33,7 @@ const TransactionList = ({ transactions, payments, onDeleteTransaction, onDelete
         }
     };
 
-    const openDeleteConfirm = (id, type) => {
+    const openDeleteConfirm = (id: number, type: DeleteType): void => {
         setDeleteConfirmId(id);
         setDeleteType(type);
     };
@@ -122,8 +132,8 @@ const TransactionList = ({ transactions, payments, onDeleteTransaction, onDelete
                                         opacity: 0.6,
                                         transition: 'opacity 0.2s'
                                     }}
-                                    onMouseEnter={(e) => e.target.style.opacity = 1}
-                                    onMouseLeave={(e) => e.target.style.opacity = 0.6}
+                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
                                     title="削除"
                                 >
                                     <Trash2 size={18} />

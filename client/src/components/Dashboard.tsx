@@ -1,7 +1,13 @@
 import React from 'react';
+import type { Balance, User } from '../types';
 
-const Dashboard = ({ balance, users }) => {
-    const getUser = (id) => users.find(u => u.id === id);
+interface DashboardProps {
+    balance: Balance[];
+    users: User[];
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ balance, users }) => {
+    const getUser = (id: number): User | undefined => users.find(u => u.id === id);
 
     return (
         <div className="card animate-fade-in">

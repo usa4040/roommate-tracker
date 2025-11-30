@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
 import { UserPlus, Users } from 'lucide-react';
+import type { User } from '../types';
 
-const UserManagement = ({ users, onAddUser, onUpdateUser, onDeleteUser }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [newName, setNewName] = useState('');
-    const [editingId, setEditingId] = useState(null);
-    const [editName, setEditName] = useState('');
-    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+interface UserManagementProps {
+    users: User[];
+    onAddUser: (name: string) => Promise<boolean>;
+    onUpdateUser: (id: number, name: string) => Promise<boolean>;
+    onDeleteUser: (id: number) => Promise<boolean>;
+}
 
-    const handleSubmit = async (e) => {
+const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onUpdateUser, onDeleteUser }) => {
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [newName, setNewName] = useState<string>('');
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editName, setEditName] = useState<string>('');
+    const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         if (!newName.trim()) return;
 
@@ -18,18 +26,18 @@ const UserManagement = ({ users, onAddUser, onUpdateUser, onDeleteUser }) => {
         }
     };
 
-    const handleUpdate = async (e) => {
+    const handleUpdate = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         if (!editName.trim()) return;
 
-        const success = await onUpdateUser(editingId, editName);
+        const success = await onUpdateUser(editingId!, editName);
         if (success) {
             setEditingId(null);
             setEditName('');
         }
     };
 
-    const confirmDelete = async () => {
+    const confirmDelete = async (): Promise<void> => {
         if (deleteConfirmId) {
             const success = await onDeleteUser(deleteConfirmId);
             if (!success) {
@@ -39,7 +47,7 @@ const UserManagement = ({ users, onAddUser, onUpdateUser, onDeleteUser }) => {
         }
     };
 
-    const startEdit = (user) => {
+    const startEdit = (user: User): void => {
         setEditingId(user.id);
         setEditName(user.name);
     };
@@ -84,8 +92,7 @@ const UserManagement = ({ users, onAddUser, onUpdateUser, onDeleteUser }) => {
                         background: 'rgba(255,255,255,0.05)',
                         borderRadius: 'var(--radius-md)',
                         border: '1px solid rgba(255,255,255,0.05)',
-                        position: 'relative',
-                        group: 'true'
+                        position: 'relative'
                     }}>
                         {editingId === u.id ? (
                             <form onSubmit={handleUpdate} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>

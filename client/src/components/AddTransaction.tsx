@@ -1,11 +1,28 @@
 import React, { useState } from 'react';
 import { PlusCircle, Receipt, DollarSign } from 'lucide-react';
+import type { User, TransactionInput, PaymentInput } from '../types';
 
-const AddTransaction = ({ users, onAddTransaction, onAddPayment }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [transactionType, setTransactionType] = useState('expense'); // 'expense' or 'payment'
-    const [formData, setFormData] = useState({
+interface AddTransactionProps {
+    users: User[];
+    onAddTransaction: (transaction: TransactionInput) => Promise<boolean>;
+    onAddPayment: (payment: PaymentInput) => Promise<boolean>;
+}
+
+type TransactionType = 'expense' | 'payment';
+
+interface FormData {
+    payer_id: string;
+    to_user_id: string;
+    amount: string;
+    description: string;
+    date: string;
+}
+
+const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction, onAddPayment }) => {
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [transactionType, setTransactionType] = useState<TransactionType>('expense');
+    const [formData, setFormData] = useState<FormData>({
         payer_id: '',
         to_user_id: '',
         amount: '',
@@ -13,7 +30,7 @@ const AddTransaction = ({ users, onAddTransaction, onAddPayment }) => {
         date: new Date().toISOString().split('T')[0]
     });
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
 
         if (isSubmitting) return; // 送信中は処理しない
@@ -158,13 +175,13 @@ const AddTransaction = ({ users, onAddTransaction, onAddPayment }) => {
                         {users.map(u => (
                             <div
                                 key={u.id}
-                                onClick={() => setFormData({ ...formData, payer_id: u.id })}
+                                onClick={() => setFormData({ ...formData, payer_id: u.id.toString() })}
                                 style={{
                                     flex: 1,
                                     padding: '0.75rem',
                                     borderRadius: 'var(--radius-md)',
-                                    border: `1px solid ${formData.payer_id === u.id ? (transactionType === 'expense' ? 'var(--primary)' : 'var(--success)') : 'var(--glass-border)'}`,
-                                    background: formData.payer_id === u.id ? (transactionType === 'expense' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)') : 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${formData.payer_id === u.id.toString() ? (transactionType === 'expense' ? 'var(--primary)' : 'var(--success)') : 'var(--glass-border)'}`,
+                                    background: formData.payer_id === u.id.toString() ? (transactionType === 'expense' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)') : 'rgba(255,255,255,0.05)',
                                     cursor: 'pointer',
                                     textAlign: 'center',
                                     transition: 'all 0.2s ease'
@@ -180,16 +197,16 @@ const AddTransaction = ({ users, onAddTransaction, onAddPayment }) => {
                     <div>
                         <label>受け取った人</label>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                            {users.filter(u => u.id !== formData.payer_id).map(u => (
+                            {users.filter(u => u.id.toString() !== formData.payer_id).map(u => (
                                 <div
                                     key={u.id}
-                                    onClick={() => setFormData({ ...formData, to_user_id: u.id })}
+                                    onClick={() => setFormData({ ...formData, to_user_id: u.id.toString() })}
                                     style={{
                                         flex: 1,
                                         padding: '0.75rem',
                                         borderRadius: 'var(--radius-md)',
-                                        border: `1px solid ${formData.to_user_id === u.id ? 'var(--success)' : 'var(--glass-border)'}`,
-                                        background: formData.to_user_id === u.id ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.05)',
+                                        border: `1px solid ${formData.to_user_id === u.id.toString() ? 'var(--success)' : 'var(--glass-border)'}`,
+                                        background: formData.to_user_id === u.id.toString() ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.05)',
                                         cursor: 'pointer',
                                         textAlign: 'center',
                                         transition: 'all 0.2s ease'

@@ -3,19 +3,19 @@ import { socket } from '../socket';
 import { Wifi, WifiOff } from 'lucide-react';
 import './ConnectionStatus.css';
 
-const ConnectionStatus = () => {
-    const [isConnected, setIsConnected] = useState(socket.connected);
-    const [showStatus, setShowStatus] = useState(false);
+const ConnectionStatus: React.FC = () => {
+    const [isConnected, setIsConnected] = useState<boolean>(socket.connected);
+    const [showStatus, setShowStatus] = useState<boolean>(false);
 
     useEffect(() => {
-        const onConnect = () => {
+        const onConnect = (): void => {
             setIsConnected(true);
             setShowStatus(true);
             // 接続成功メッセージは3秒後に非表示
             setTimeout(() => setShowStatus(false), 3000);
         };
 
-        const onDisconnect = () => {
+        const onDisconnect = (): void => {
             setIsConnected(false);
             setShowStatus(true);
         };
