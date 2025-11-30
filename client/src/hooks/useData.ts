@@ -1,18 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import socket from '../socket';
+import type {
+    User,
+    Transaction,
+    Payment,
+    Balance,
+    TransactionInput,
+    PaymentInput,
+    ApiResponse,
+    UseDataReturn
+} from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-export const useData = () => {
-    const [users, setUsers] = useState([]);
-    const [transactions, setTransactions] = useState([]);
-    const [payments, setPayments] = useState([]);
-    const [balance, setBalance] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+export const useData = (): UseDataReturn => {
+    const [users, setUsers] = useState<User[]>([]);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [payments, setPayments] = useState<Payment[]>([]);
+    const [balance, setBalance] = useState<Balance[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const fetchData = useCallback(async () => {
+    const fetchData = useCallback(async (): Promise<void> => {
         try {
             setLoading(true);
             const [usersRes, transRes, paymentsRes, balRes] = await Promise.all([
@@ -22,10 +32,10 @@ export const useData = () => {
                 fetch(`${API_URL}/balance`)
             ]);
 
-            const usersData = await usersRes.json();
-            const transData = await transRes.json();
-            const paymentsData = await paymentsRes.json();
-            const balData = await balRes.json();
+            const usersData: ApiResponse<User[]> = await usersRes.json();
+            const transData: ApiResponse<Transaction[]> = await transRes.json();
+            const paymentsData: ApiResponse<Payment[]> = await paymentsRes.json();
+            const balData: ApiResponse<Balance[]> = await balRes.json();
 
             if (usersData.error) throw new Error(usersData.error);
             if (transData.error) throw new Error(transData.error);
@@ -37,13 +47,14 @@ export const useData = () => {
             setPayments(paymentsData.data);
             setBalance(balData.data);
         } catch (err) {
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
     }, []);
 
-    const addTransaction = async (transaction) => {
+    const addTransaction = async (transaction: TransactionInput): Promise<boolean> => {
         const toastId = toast.loading('経費を追加中...');
         try {
             const res = await fetch(`${API_URL}/transactions`, {
@@ -53,7 +64,7 @@ export const useData = () => {
                 },
                 body: JSON.stringify(transaction),
             });
-            const data = await res.json();
+            const data: ApiResponse<Transaction> = await res.json();
             if (data.error) throw new Error(data.error);
 
             // Refresh data
@@ -61,13 +72,14 @@ export const useData = () => {
             toast.success('経費を追加しました', { id: toastId });
             return true;
         } catch (err) {
-            toast.error(`エラー: ${err.message}`, { id: toastId });
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
             return false;
         }
     };
 
-    const addUser = async (name) => {
+    const addUser = async (name: string): Promise<boolean> => {
         const toastId = toast.loading('ユーザーを追加中...');
         try {
             const res = await fetch(`${API_URL}/users`, {
@@ -77,7 +89,7 @@ export const useData = () => {
                 },
                 body: JSON.stringify({ name }),
             });
-            const data = await res.json();
+            const data: ApiResponse<User> = await res.json();
             if (data.error) throw new Error(data.error);
 
             // Refresh data
@@ -85,13 +97,14 @@ export const useData = () => {
             toast.success(`${name}さんを追加しました`, { id: toastId });
             return true;
         } catch (err) {
-            toast.error(`エラー: ${err.message}`, { id: toastId });
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
             return false;
         }
     };
 
-    const updateUser = async (id, name) => {
+    const updateUser = async (id: number, name: string): Promise<boolean> => {
         const toastId = toast.loading('ユーザー名を更新中...');
         try {
             const res = await fetch(`${API_URL}/users/${id}`, {
@@ -101,55 +114,58 @@ export const useData = () => {
                 },
                 body: JSON.stringify({ name }),
             });
-            const data = await res.json();
+            const data: ApiResponse<User> = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
             toast.success('ユーザー名を更新しました', { id: toastId });
             return true;
         } catch (err) {
-            toast.error(`エラー: ${err.message}`, { id: toastId });
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
             return false;
         }
     };
 
-    const deleteUser = async (id) => {
+    const deleteUser = async (id: number): Promise<boolean> => {
         const toastId = toast.loading('ユーザーを削除中...');
         try {
             const res = await fetch(`${API_URL}/users/${id}`, {
                 method: 'DELETE',
             });
-            const data = await res.json();
+            const data: ApiResponse<void> = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
             toast.success('ユーザーを削除しました', { id: toastId });
             return true;
         } catch (err) {
-            toast.error(`エラー: ${err.message}`, { id: toastId });
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
             return false;
         }
     };
 
-    const deleteTransaction = async (id) => {
+    const deleteTransaction = async (id: number): Promise<boolean> => {
         const toastId = toast.loading('取引を削除中...');
         try {
             const res = await fetch(`${API_URL}/transactions/${id}`, {
                 method: 'DELETE',
             });
-            const data = await res.json();
+            const data: ApiResponse<void> = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
             toast.success('取引を削除しました', { id: toastId });
             return true;
         } catch (err) {
-            toast.error(`エラー: ${err.message}`, { id: toastId });
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
             return false;
         }
     };
 
-    const addPayment = async (payment) => {
+    const addPayment = async (payment: PaymentInput): Promise<boolean> => {
         const toastId = toast.loading('返済を記録中...');
         try {
             const res = await fetch(`${API_URL}/payments`, {
@@ -159,32 +175,34 @@ export const useData = () => {
                 },
                 body: JSON.stringify(payment),
             });
-            const data = await res.json();
+            const data: ApiResponse<Payment> = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
             toast.success('返済を記録しました', { id: toastId });
             return true;
         } catch (err) {
-            toast.error(`エラー: ${err.message}`, { id: toastId });
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
             return false;
         }
     };
 
-    const deletePayment = async (id) => {
+    const deletePayment = async (id: number): Promise<boolean> => {
         const toastId = toast.loading('返済を削除中...');
         try {
             const res = await fetch(`${API_URL}/payments/${id}`, {
                 method: 'DELETE',
             });
-            const data = await res.json();
+            const data: ApiResponse<void> = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
             toast.success('返済を削除しました', { id: toastId });
             return true;
         } catch (err) {
-            toast.error(`エラー: ${err.message}`, { id: toastId });
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
             return false;
         }
     };
@@ -193,7 +211,7 @@ export const useData = () => {
         fetchData();
 
         // Listen for real-time updates from other clients
-        const handleDataUpdate = (data) => {
+        const handleDataUpdate = (data: unknown) => {
             console.log('Data updated:', data);
             // Refresh all data when any change occurs
             fetchData();

@@ -1,11 +1,10 @@
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 // Remove '/api' suffix from VITE_API_URL if present
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const SOCKET_URL = apiUrl.replace('/api', '');
+const apiUrl: string = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const SOCKET_URL: string = apiUrl.replace('/api', '');
 
-
-export const socket = io(SOCKET_URL, {
+export const socket: Socket = io(SOCKET_URL, {
     autoConnect: true,
     reconnection: true,
     reconnectionDelay: 1000,
@@ -21,7 +20,7 @@ socket.on('disconnect', () => {
     console.log('Disconnected from server');
 });
 
-socket.on('connect_error', (error) => {
+socket.on('connect_error', (error: Error) => {
     console.error('Connection error:', error);
 });
 
