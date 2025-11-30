@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import socket from '../socket';
-
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -44,6 +44,7 @@ export const useData = () => {
     }, []);
 
     const addTransaction = async (transaction) => {
+        const toastId = toast.loading('経費を追加中...');
         try {
             const res = await fetch(`${API_URL}/transactions`, {
                 method: 'POST',
@@ -57,14 +58,17 @@ export const useData = () => {
 
             // Refresh data
             await fetchData();
+            toast.success('経費を追加しました', { id: toastId });
             return true;
         } catch (err) {
+            toast.error(`エラー: ${err.message}`, { id: toastId });
             setError(err.message);
             return false;
         }
     };
 
     const addUser = async (name) => {
+        const toastId = toast.loading('ユーザーを追加中...');
         try {
             const res = await fetch(`${API_URL}/users`, {
                 method: 'POST',
@@ -78,14 +82,17 @@ export const useData = () => {
 
             // Refresh data
             await fetchData();
+            toast.success(`${name}さんを追加しました`, { id: toastId });
             return true;
         } catch (err) {
+            toast.error(`エラー: ${err.message}`, { id: toastId });
             setError(err.message);
             return false;
         }
     };
 
     const updateUser = async (id, name) => {
+        const toastId = toast.loading('ユーザー名を更新中...');
         try {
             const res = await fetch(`${API_URL}/users/${id}`, {
                 method: 'PUT',
@@ -97,14 +104,17 @@ export const useData = () => {
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
+            toast.success('ユーザー名を更新しました', { id: toastId });
             return true;
         } catch (err) {
+            toast.error(`エラー: ${err.message}`, { id: toastId });
             setError(err.message);
             return false;
         }
     };
 
     const deleteUser = async (id) => {
+        const toastId = toast.loading('ユーザーを削除中...');
         try {
             const res = await fetch(`${API_URL}/users/${id}`, {
                 method: 'DELETE',
@@ -112,14 +122,17 @@ export const useData = () => {
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
+            toast.success('ユーザーを削除しました', { id: toastId });
             return true;
         } catch (err) {
+            toast.error(`エラー: ${err.message}`, { id: toastId });
             setError(err.message);
             return false;
         }
     };
 
     const deleteTransaction = async (id) => {
+        const toastId = toast.loading('取引を削除中...');
         try {
             const res = await fetch(`${API_URL}/transactions/${id}`, {
                 method: 'DELETE',
@@ -127,14 +140,17 @@ export const useData = () => {
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
+            toast.success('取引を削除しました', { id: toastId });
             return true;
         } catch (err) {
+            toast.error(`エラー: ${err.message}`, { id: toastId });
             setError(err.message);
             return false;
         }
     };
 
     const addPayment = async (payment) => {
+        const toastId = toast.loading('返済を記録中...');
         try {
             const res = await fetch(`${API_URL}/payments`, {
                 method: 'POST',
@@ -146,14 +162,17 @@ export const useData = () => {
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
+            toast.success('返済を記録しました', { id: toastId });
             return true;
         } catch (err) {
+            toast.error(`エラー: ${err.message}`, { id: toastId });
             setError(err.message);
             return false;
         }
     };
 
     const deletePayment = async (id) => {
+        const toastId = toast.loading('返済を削除中...');
         try {
             const res = await fetch(`${API_URL}/payments/${id}`, {
                 method: 'DELETE',
@@ -161,8 +180,10 @@ export const useData = () => {
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
+            toast.success('返済を削除しました', { id: toastId });
             return true;
         } catch (err) {
+            toast.error(`エラー: ${err.message}`, { id: toastId });
             setError(err.message);
             return false;
         }

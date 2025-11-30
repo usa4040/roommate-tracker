@@ -1,0 +1,50 @@
+.connection-status {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: slideInRight 0.3s ease-out;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.connection-status.connected {
+    background: #10b981;
+    color: white;
+}
+
+.connection-status.disconnected {
+    background: #ef4444;
+    color: white;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    .connection-status {
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+}

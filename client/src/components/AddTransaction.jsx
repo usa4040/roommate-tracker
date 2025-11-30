@@ -3,6 +3,7 @@ import { PlusCircle, Receipt, DollarSign } from 'lucide-react';
 
 const AddTransaction = ({ users, onAddTransaction, onAddPayment }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [transactionType, setTransactionType] = useState('expense'); // 'expense' or 'payment'
     const [formData, setFormData] = useState({
         payer_id: '',
@@ -15,35 +16,48 @@ const AddTransaction = ({ users, onAddTransaction, onAddPayment }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        let success = false;
-        if (transactionType === 'expense') {
-            if (!formData.payer_id || !formData.amount || !formData.description) return;
-            success = await onAddTransaction({
-                payer_id: parseInt(formData.payer_id),
-                amount: parseFloat(formData.amount),
-                description: formData.description,
-                date: formData.date
-            });
-        } else {
-            if (!formData.payer_id || !formData.to_user_id || !formData.amount) return;
-            success = await onAddPayment({
-                from_user_id: parseInt(formData.payer_id),
-                to_user_id: parseInt(formData.to_user_id),
-                amount: parseFloat(formData.amount),
-                description: formData.description,
-                date: formData.date
-            });
-        }
+        if (isSubmitting) return; // 送信中は処理しない
+        setIsSubmitting(true);
 
-        if (success) {
-            setFormData({
-                payer_id: '',
-                to_user_id: '',
-                amount: '',
-                description: '',
-                date: new Date().toISOString().split('T')[0]
-            });
-            setIsOpen(false);
+        try {
+            let success = false;
+            if (transactionType === 'expense') {
+                if (!formData.payer_id || !formData.amount || !formData.description) {
+                    setIsSubmitting(false);
+                    return;
+                }
+                success = await onAddTransaction({
+                    payer_id: parseInt(formData.payer_id),
+                    amount: parseFloat(formData.amount),
+                    description: formData.description,
+                    date: formData.date
+                });
+            } else {
+                if (!formData.payer_id || !formData.to_user_id || !formData.amount) {
+                    setIsSubmitting(false);
+                    return;
+                }
+                success = await onAddPayment({
+                    from_user_id: parseInt(formData.payer_id),
+                    to_user_id: parseInt(formData.to_user_id),
+                    amount: parseFloat(formData.amount),
+                    description: formData.description,
+                    date: formData.date
+                });
+            }
+
+            if (success) {
+                setFormData({
+                    payer_id: '',
+                    to_user_id: '',
+                    amount: '',
+                    description: '',
+                    date: new Date().toISOString().split('T')[0]
+                });
+                setIsOpen(false);
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -222,11 +236,22 @@ const AddTransaction = ({ users, onAddTransaction, onAddPayment }) => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                    <button type="button" className="btn btn-secondary" onClick={() => setIsOpen(false)} style={{ flex: 1 }}>
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setIsOpen(false)}
+                        style={{ flex: 1 }}
+                        disabled={isSubmitting}
+                    >
                         キャンセル
                     </button>
-                    <button type="submit" className="btn" style={{ flex: 1 }}>
-                        保存
+                    <button
+                        type="submit"
+                        className="btn"
+                        style={{ flex: 1 }}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? '送信中...' : '保存'}
                     </button>
                 </div>
             </form>
