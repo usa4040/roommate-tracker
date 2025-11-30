@@ -308,16 +308,18 @@ app.get('/api/balance', (req, res) => {
                     });
 
                     // Adjust for payments
-                    // When user A pays user B, A's balance decreases and B's balance increases
+                    // When user A pays user B (A returns money to B):
+                    // - A has paid back debt, so reduce A's total paid (they owe less)
+                    // - B has received payment, so reduce B's total paid (they are owed less)
                     paymentRows.forEach(payment => {
                         const fromId = payment.from_user_id;
                         const toId = payment.to_user_id;
                         const amount = payment.total_amount;
 
-                        // The person who paid (from) has paid more towards settling
-                        balances[fromId] = (balances[fromId] || 0) - amount;
-                        // The person who received (to) has received payment
-                        balances[toId] = (balances[toId] || 0) + amount;
+                        // The person who paid (from) has returned money, reducing their debt
+                        balances[fromId] = (balances[fromId] || 0) + amount;
+                        // The person who received (to) has been paid back, reducing what they're owed
+                        balances[toId] = (balances[toId] || 0) - amount;
                     });
 
                     const netBalances = [];
