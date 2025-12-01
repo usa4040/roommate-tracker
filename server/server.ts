@@ -4,6 +4,14 @@ import bodyParser from 'body-parser';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import db from './db';
+import { validateBody, validateParams } from './middleware';
+import {
+    userInputSchema,
+    userUpdateSchema,
+    transactionInputSchema,
+    paymentInputSchema,
+    idParamSchema
+} from './schemas';
 import type {
     User,
     UserInput,
@@ -60,7 +68,7 @@ app.get('/api/users', (_req: Request, res: Response) => {
 });
 
 // Create a new user
-app.post('/api/users', (req: Request, res: Response) => {
+app.post('/api/users', validateBody(userInputSchema), (req: Request, res: Response) => {
     const { name, avatar } = req.body as Partial<UserInput & { avatar?: string }>;
     const sql = 'INSERT INTO users (name, avatar) VALUES (?,?)';
     // Use a default avatar if none provided
@@ -81,7 +89,7 @@ app.post('/api/users', (req: Request, res: Response) => {
 });
 
 // Update a user
-app.put('/api/users/:id', (req: Request, res: Response) => {
+app.put('/api/users/:id', validateParams(idParamSchema), validateBody(userUpdateSchema), (req: Request, res: Response) => {
     const { name, avatar } = req.body as Partial<UserInput & { avatar?: string }>;
     const sql = 'UPDATE users SET name = COALESCE(?, name), avatar = COALESCE(?, avatar) WHERE id = ?';
     const params = [name, avatar, req.params.id];
@@ -100,7 +108,7 @@ app.put('/api/users/:id', (req: Request, res: Response) => {
 });
 
 // Delete a user
-app.delete('/api/users/:id', (req: Request, res: Response) => {
+app.delete('/api/users/:id', validateParams(idParamSchema), (req: Request, res: Response) => {
     const userId = req.params.id;
 
     // First delete all transactions for this user
@@ -142,7 +150,7 @@ app.get('/api/transactions', (_req: Request, res: Response) => {
 });
 
 // Create a new transaction
-app.post('/api/transactions', (req: Request, res: Response) => {
+app.post('/api/transactions', validateBody(transactionInputSchema), (req: Request, res: Response) => {
     const { payer_id, amount, description, date } = req.body as TransactionInput;
     const sql = 'INSERT INTO transactions (payer_id, amount, description, date) VALUES (?,?,?,?)';
     const params = [payer_id, amount, description, date];
@@ -170,7 +178,7 @@ app.post('/api/transactions', (req: Request, res: Response) => {
 });
 
 // Delete a transaction
-app.delete('/api/transactions/:id', (req: Request, res: Response) => {
+app.delete('/api/transactions/:id', validateParams(idParamSchema), (req: Request, res: Response) => {
     const transactionId = req.params.id;
 
     db.run('DELETE FROM transactions WHERE id = ?', [transactionId], function (err) {
@@ -209,7 +217,7 @@ app.get('/api/payments', (_req: Request, res: Response) => {
 });
 
 // Create a new payment
-app.post('/api/payments', (req: Request, res: Response) => {
+app.post('/api/payments', validateBody(paymentInputSchema), (req: Request, res: Response) => {
     const { from_user_id, to_user_id, amount, description, date } = req.body as PaymentInput;
     const sql = 'INSERT INTO payments (from_user_id, to_user_id, amount, description, date) VALUES (?,?,?,?,?)';
     const params = [from_user_id, to_user_id, amount, description || '', date];
@@ -237,7 +245,7 @@ app.post('/api/payments', (req: Request, res: Response) => {
 });
 
 // Delete a payment
-app.delete('/api/payments/:id', (req: Request, res: Response) => {
+app.delete('/api/payments/:id', validateParams(idParamSchema), (req: Request, res: Response) => {
     const paymentId = req.params.id;
 
     db.run('DELETE FROM payments WHERE id = ?', [paymentId], function (err) {

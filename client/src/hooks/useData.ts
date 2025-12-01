@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { ZodError } from 'zod';
 import socket from '../socket';
+import { transactionInputSchema, paymentInputSchema, userInputSchema } from '../schemas';
 import type {
     User,
     Transaction,
@@ -57,13 +59,27 @@ export const useData = (): UseDataReturn => {
     const addTransaction = async (transaction: TransactionInput): Promise<boolean> => {
         const toastId = toast.loading('経費を追加中...');
         try {
+            // Validate input before sending
+            const validated = transactionInputSchema.parse(transaction);
+
             const res = await fetch(`${API_URL}/transactions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(transaction),
+                body: JSON.stringify(validated),
             });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                if (errorData.details) {
+                    // Show validation errors from backend
+                    const errorMessages = errorData.details.map((d: any) => d.message).join(', ');
+                    throw new Error(errorMessages);
+                }
+                throw new Error(errorData.error || 'リクエストに失敗しました');
+            }
+
             const data: ApiResponse<Transaction> = await res.json();
             if (data.error) throw new Error(data.error);
 
@@ -72,6 +88,11 @@ export const useData = (): UseDataReturn => {
             toast.success('経費を追加しました', { id: toastId });
             return true;
         } catch (err) {
+            if (err instanceof ZodError) {
+                const errorMessages = err.errors.map(e => e.message).join(', ');
+                toast.error(`入力エラー: ${errorMessages}`, { id: toastId });
+                return false;
+            }
             const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
             toast.error(`エラー: ${errorMessage}`, { id: toastId });
             setError(errorMessage);
@@ -82,13 +103,26 @@ export const useData = (): UseDataReturn => {
     const addUser = async (name: string): Promise<boolean> => {
         const toastId = toast.loading('ユーザーを追加中...');
         try {
+            // Validate input before sending
+            const validated = userInputSchema.parse({ name });
+
             const res = await fetch(`${API_URL}/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name }),
+                body: JSON.stringify(validated),
             });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                if (errorData.details) {
+                    const errorMessages = errorData.details.map((d: any) => d.message).join(', ');
+                    throw new Error(errorMessages);
+                }
+                throw new Error(errorData.error || 'リクエストに失敗しました');
+            }
+
             const data: ApiResponse<User> = await res.json();
             if (data.error) throw new Error(data.error);
 
@@ -97,6 +131,11 @@ export const useData = (): UseDataReturn => {
             toast.success(`${name}さんを追加しました`, { id: toastId });
             return true;
         } catch (err) {
+            if (err instanceof ZodError) {
+                const errorMessages = err.errors.map(e => e.message).join(', ');
+                toast.error(`入力エラー: ${errorMessages}`, { id: toastId });
+                return false;
+            }
             const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
             toast.error(`エラー: ${errorMessage}`, { id: toastId });
             setError(errorMessage);
@@ -168,19 +207,37 @@ export const useData = (): UseDataReturn => {
     const addPayment = async (payment: PaymentInput): Promise<boolean> => {
         const toastId = toast.loading('返済を記録中...');
         try {
+            // Validate input before sending
+            const validated = paymentInputSchema.parse(payment);
+
             const res = await fetch(`${API_URL}/payments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(payment),
+                body: JSON.stringify(validated),
             });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                if (errorData.details) {
+                    const errorMessages = errorData.details.map((d: any) => d.message).join(', ');
+                    throw new Error(errorMessages);
+                }
+                throw new Error(errorData.error || 'リクエストに失敗しました');
+            }
+
             const data: ApiResponse<Payment> = await res.json();
             if (data.error) throw new Error(data.error);
             await fetchData();
             toast.success('返済を記録しました', { id: toastId });
             return true;
         } catch (err) {
+            if (err instanceof ZodError) {
+                const errorMessages = err.errors.map(e => e.message).join(', ');
+                toast.error(`入力エラー: ${errorMessages}`, { id: toastId });
+                return false;
+            }
             const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
             toast.error(`エラー: ${errorMessage}`, { id: toastId });
             setError(errorMessage);
