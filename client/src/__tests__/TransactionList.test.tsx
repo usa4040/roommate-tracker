@@ -276,4 +276,74 @@ describe('TransactionList Component', () => {
         const items = container.querySelectorAll('[style*="padding"]');
         expect(items.length).toBeGreaterThan(0);
     });
+
+    it('削除ボタンをクリックすると確認モーダルが表示される', async () => {
+        const user = userEvent.setup();
+        const { container } = render(
+            <TransactionList
+                transactions={mockTransactions}
+                payments={mockPayments}
+                users={mockUsers}
+                onDeleteTransaction={mockDeleteTransaction}
+                onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
+            />
+        );
+
+        // Find and click the first delete button
+        const buttons = container.querySelectorAll('button');
+        const deleteButton = Array.from(buttons).find(btn => btn.getAttribute('title') === '削除');
+
+        if (deleteButton) {
+            await user.click(deleteButton);
+
+            // Check if delete confirmation modal appears
+            await waitFor(() => {
+                expect(screen.getByText(/を削除しますか？/)).toBeInTheDocument();
+                expect(screen.getByText('この操作は元に戻せません。')).toBeInTheDocument();
+            });
+        }
+    });
+
+    it('削除確認モーダルでキャンセルをクリックするとモーダルが閉じる', async () => {
+        const user = userEvent.setup();
+        const { container } = render(
+            <TransactionList
+                transactions={mockTransactions}
+                payments={mockPayments}
+                users={mockUsers}
+                onDeleteTransaction={mockDeleteTransaction}
+                onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
+            />
+        );
+
+        // Find and click the first delete button
+        const buttons = container.querySelectorAll('button');
+        const deleteButton = Array.from(buttons).find(btn => btn.getAttribute('title') === '削除');
+
+        if (deleteButton) {
+            await user.click(deleteButton);
+
+            // Wait for modal to appear
+            await waitFor(() => {
+                expect(screen.getByText(/を削除しますか？/)).toBeInTheDocument();
+            });
+
+            // Click cancel button
+            const cancelButton = screen.getByText('キャンセル');
+            await user.click(cancelButton);
+
+            // Check if modal disappears
+            await waitFor(() => {
+                expect(screen.queryByText(/を削除しますか？/)).not.toBeInTheDocument();
+            });
+
+            // Delete function should not have been called
+            expect(mockDeleteTransaction).not.toHaveBeenCalled();
+            expect(mockDeletePayment).not.toHaveBeenCalled();
+        }
+    });
 });
