@@ -1,19 +1,33 @@
 import React, { useState } from 'react';
-import { Calendar, User, Trash2, ArrowRight, Receipt } from 'lucide-react';
-import type { Transaction, Payment, TransactionOrPayment } from '../types';
+import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X } from 'lucide-react';
+import type { Transaction, Payment, TransactionOrPayment, TransactionInput, PaymentInput } from '../types';
 
 interface TransactionListProps {
     transactions: Transaction[];
     payments: Payment[];
+    users: { id: number; name: string }[];
     onDeleteTransaction: (id: number) => Promise<boolean>;
     onDeletePayment: (id: number) => Promise<boolean>;
+    onUpdateTransaction: (id: number, transaction: TransactionInput) => Promise<boolean>;
+    onUpdatePayment: (id: number, payment: PaymentInput) => Promise<boolean>;
 }
 
 type DeleteType = 'transaction' | 'payment';
 
-const TransactionList: React.FC<TransactionListProps> = ({ transactions, payments, onDeleteTransaction, onDeletePayment }) => {
+const TransactionList: React.FC<TransactionListProps> = ({
+    transactions,
+    payments,
+    users,
+    onDeleteTransaction,
+    onDeletePayment,
+    onUpdateTransaction,
+    onUpdatePayment
+}) => {
     const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
     const [deleteType, setDeleteType] = useState<DeleteType | null>(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingType, setEditingType] = useState<DeleteType | null>(null);
+    const [editForm, setEditForm] = useState<any>({});
 
     // Combine transactions and payments into a single list
     const allItems: TransactionOrPayment[] = [
@@ -38,6 +52,49 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, payment
         setDeleteType(type);
     };
 
+    const startEdit = (item: TransactionOrPayment): void => {
+        setEditingId(item.id);
+        setEditingType(item.type);
+
+        if (item.type === 'transaction') {
+            setEditForm({
+                payer_id: item.payer_id,
+                amount: item.amount,
+                description: item.description,
+                date: item.date
+            });
+        } else {
+            setEditForm({
+                from_user_id: item.from_user_id,
+                to_user_id: item.to_user_id,
+                amount: item.amount,
+                description: item.description || '',
+                date: item.date
+            });
+        }
+    };
+
+    const cancelEdit = (): void => {
+        setEditingId(null);
+        setEditingType(null);
+        setEditForm({});
+    };
+
+    const saveEdit = async (): Promise<void> => {
+        if (editingId && editingType) {
+            let success = false;
+            if (editingType === 'transaction') {
+                success = await onUpdateTransaction(editingId, editForm);
+            } else {
+                success = await onUpdatePayment(editingId, editForm);
+            }
+
+            if (success) {
+                cancelEdit();
+            }
+        }
+    };
+
     return (
         <div className="card animate-fade-in">
             <h3 style={{ marginBottom: '1rem' }}>最近の取引</h3>
@@ -47,10 +104,111 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, payment
                         まだ取引がありません。
                     </div>
                 )}
-                {allItems.map((item, index) => {
+                {allItems.map((item) => {
                     const isPayment = item.type === 'payment';
                     const key = `${item.type}-${item.id}`;
+                    const isEditing = editingId === item.id && editingType === item.type;
 
+                    if (isEditing) {
+                        // Edit mode
+                        return (
+                            <div key={key} style={{
+                                padding: '1rem',
+                                background: 'rgba(255,255,255,0.05)',
+                                borderRadius: 'var(--radius-md)',
+                                borderLeft: `3px solid ${isPayment ? 'var(--success)' : 'var(--primary)'}`,
+                            }}>
+                                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                    {isPayment ? (
+                                        <>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>支払った人</label>
+                                                    <select
+                                                        value={editForm.from_user_id}
+                                                        onChange={(e) => setEditForm({ ...editForm, from_user_id: parseInt(e.target.value) })}
+                                                        style={{ width: '100%', marginTop: '0.25rem' }}
+                                                    >
+                                                        {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>受け取った人</label>
+                                                    <select
+                                                        value={editForm.to_user_id}
+                                                        onChange={(e) => setEditForm({ ...editForm, to_user_id: parseInt(e.target.value) })}
+                                                        style={{ width: '100%', marginTop: '0.25rem' }}
+                                                    >
+                                                        {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div>
+                                            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>支払った人</label>
+                                            <select
+                                                value={editForm.payer_id}
+                                                onChange={(e) => setEditForm({ ...editForm, payer_id: parseInt(e.target.value) })}
+                                                style={{ width: '100%', marginTop: '0.25rem' }}
+                                            >
+                                                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                            </select>
+                                        </div>
+                                    )}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                        <div>
+                                            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>金額</label>
+                                            <input
+                                                type="number"
+                                                value={editForm.amount}
+                                                onChange={(e) => setEditForm({ ...editForm, amount: parseFloat(e.target.value) })}
+                                                style={{ width: '100%', marginTop: '0.25rem' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>日付</label>
+                                            <input
+                                                type="date"
+                                                value={editForm.date}
+                                                onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                                                style={{ width: '100%', marginTop: '0.25rem' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>内容</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.description}
+                                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                            style={{ width: '100%', marginTop: '0.25rem' }}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                        <button
+                                            onClick={cancelEdit}
+                                            className="btn btn-secondary"
+                                            style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                                        >
+                                            <X size={16} style={{ marginRight: '0.25rem' }} />
+                                            キャンセル
+                                        </button>
+                                        <button
+                                            onClick={saveEdit}
+                                            className="btn"
+                                            style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                                        >
+                                            <Check size={16} style={{ marginRight: '0.25rem' }} />
+                                            保存
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    }
+
+                    // View mode
                     return (
                         <div key={key} style={{
                             display: 'flex',
@@ -113,7 +271,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, payment
                                     </span>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <div style={{
                                     fontWeight: 700,
                                     fontSize: '1.1rem',
@@ -121,6 +279,23 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, payment
                                 }}>
                                     {isPayment && '+'}{item.amount.toLocaleString()}円
                                 </div>
+                                <button
+                                    onClick={() => startEdit(item)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--primary)',
+                                        cursor: 'pointer',
+                                        padding: '0.5rem',
+                                        opacity: 0.6,
+                                        transition: 'opacity 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
+                                    title="編集"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
                                 <button
                                     onClick={() => openDeleteConfirm(item.id, item.type)}
                                     style={{

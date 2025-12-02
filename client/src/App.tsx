@@ -9,7 +9,23 @@ import ConnectionStatus from './components/ConnectionStatus';
 import { useData } from './hooks/useData';
 
 function App() {
-    const { users, transactions, payments, balance, loading, error, addTransaction, addUser, updateUser, deleteUser, deleteTransaction, addPayment, deletePayment } = useData();
+    const {
+        users,
+        transactions,
+        payments,
+        balance,
+        loading,
+        error,
+        addTransaction,
+        updateTransaction,
+        addUser,
+        updateUser,
+        deleteUser,
+        deleteTransaction,
+        addPayment,
+        updatePayment,
+        deletePayment
+    } = useData();
 
     if (loading) {
         return (
@@ -74,8 +90,11 @@ function App() {
                     <TransactionList
                         transactions={transactions}
                         payments={payments}
+                        users={users}
                         onDeleteTransaction={deleteTransaction}
                         onDeletePayment={deletePayment}
+                        onUpdateTransaction={updateTransaction}
+                        onUpdatePayment={updatePayment}
                     />
                 </div>
             </Layout>
