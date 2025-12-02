@@ -18,6 +18,10 @@ yarn-error.log*
 dist/
 build/
 
+# Test coverage
+coverage/
+.nyc_output/
+
 # IDE
 .vscode/
 .idea/

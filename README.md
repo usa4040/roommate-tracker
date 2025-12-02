@@ -1,554 +1,197 @@
 # ルームメイト支払い管理アプリ
 
-ルームシェアにおける家賃・光熱費などの共同経費を管理するためのWebアプリケーションです。
+[![CI/CD Pipeline](https://github.com/usa4040/roommate-tracker/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/usa4040/roommate-tracker/actions/workflows/ci-cd.yml)
+[![Tests](https://img.shields.io/badge/tests-66%20passing-success)](https://github.com/usa4040/roommate-tracker)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 📋 目次
+ルームメイト間の経費と返済を管理するWebアプリケーションです。リアルタイム同期機能により、複数のユーザーが同時に利用できます。
 
-- [プロジェクト概要](#プロジェクト概要)
-- [ディレクトリ構造](#ディレクトリ構造)
-- [技術スタック](#技術スタック)
-- [セットアップ](#セットアップ)
-- [動作の仕組み](#動作の仕組み)
-- [主要コンポーネント](#主要コンポーネント)
-- [データフロー](#データフロー)
-- [API仕様](#api仕様)
+## ✨ 機能
 
-## 🎯 プロジェクト概要
+- 📝 **経費の記録**: 誰がいくら支払ったかを簡単に記録
+- 💰 **返済の管理**: ルームメイト間の返済を追跡
+- 📊 **収支サマリー**: 各ユーザーの収支を一目で確認
+- 🔄 **リアルタイム同期**: Socket.IOによる即時更新
+- ✅ **データ検証**: Zodによる堅牢なバリデーション
+- 🎨 **モダンUI**: レスポンシブで美しいインターフェース
 
-このアプリは、ルームメイト間での経費の支払いを追跡し、誰が誰にいくら支払うべきかを自動計算します。
+## 🧪 テスト
 
-**主な機能:**
-- ✅ ルームメイトの管理（追加・編集・削除）
-- ✅ 経費の記録（誰が何にいくら払ったか）
-- ✅ 経費の削除（間違えて入力した経費を削除可能）
-- ✅ 自動で収支を計算し、精算額を表示
-- ✅ 取引履歴の表示
-- ✅ 日本語UI
-- ✅ PostgreSQLによるデータ永続化
-- ✅ Renderでデプロイ可能
+このプロジェクトは包括的なテストカバレッジを持っています：
 
-## 📂 ディレクトリ構造
+- **バックエンド**: 30 tests (Jest + Supertest)
+  - ユニットテスト: 18 tests
+  - 統合テスト: 12 tests
+- **フロントエンド**: 36 tests (Vitest + React Testing Library)
+  - ユニットテスト: 8 tests
+  - コンポーネントテスト: 28 tests
+- **合計**: 66 passing tests ✅
 
-```
-roommate-tracker/
-├── client/                    # フロントエンド (React + Vite)
-│   ├── public/               # 静的ファイル
-│   ├── src/
-│   │   ├── components/       # Reactコンポーネント
-│   │   │   ├── Layout.jsx           # レイアウト（ヘッダーなど）
-│   │   │   ├── Dashboard.jsx        # 収支サマリー
-│   │   │   ├── UserManagement.jsx   # ルームメイト管理
-│   │   │   ├── AddTransaction.jsx   # 経費追加フォーム
-│   │   │   └── TransactionList.jsx  # 取引履歴
-│   │   ├── hooks/
-│   │   │   └── useData.js           # データ取得・操作のカスタムフック
-│   │   ├── App.jsx          # ルートコンポーネント
-│   │   ├── index.css        # グローバルスタイル
-│   │   └── main.jsx         # エントリーポイント
-│   ├── index.html
-│   ├── vite.config.js       # Vite設定
-│   └── package.json
-│
-├── server/                   # バックエンド (Node.js + Express)
-│   ├── db.js                # SQLiteデータベース接続
-│   ├── init-db.js           # DB初期化・テストデータ投入
-│   ├── server.js            # APIサーバー
-│   └── package.json
-│
-├── expenses.db              # SQLiteデータベースファイル（自動生成）
-├── package.json             # ルートpackage.json（開発用スクリプト）
-└── README.md                # このファイル
+### テストの実行
+
+```bash
+# バックエンドテスト
+cd server
+npm test
+
+# フロントエンドテスト
+cd client
+npm test
+
+# カバレッジレポート生成
+npm run test:coverage
 ```
 
-## 🛠 技術スタック
+## 🚀 技術スタック
 
 ### フロントエンド
-- **React 18** - UIライブラリ
+- **React** - UIライブラリ
+- **TypeScript** - 型安全性
 - **Vite** - 高速ビルドツール
-- **Lucide React** - アイコンライブラリ
-- **Vanilla CSS** - カスタムデザインシステム
+- **Socket.IO Client** - リアルタイム通信
+- **Zod** - スキーマバリデーション
+- **React Hot Toast** - 通知システム
+- **Lucide React** - アイコン
 
 ### バックエンド
 - **Node.js** - ランタイム
 - **Express** - Webフレームワーク
-- **PostgreSQL** - 本番環境のデータベース（Render）
-- **SQLite3** - 開発環境のデータベース
-- **CORS** - クロスオリジン対応
-- **Nodemon** - 開発時の自動再起動
+- **TypeScript** - 型安全性
+- **Socket.IO** - リアルタイム通信
+- **PostgreSQL** - 本番データベース
+- **SQLite** - 開発用データベース
+- **Zod** - データバリデーション
 
-### 開発ツール
-- **Concurrently** - フロント・バックエンドの同時起動
+### テスト
+- **Jest** - バックエンドテストフレームワーク
+- **Vitest** - フロントエンドテストフレームワーク
+- **Supertest** - API統合テスト
+- **React Testing Library** - コンポーネントテスト
 
-## 🚀 セットアップ
+### CI/CD
+- **GitHub Actions** - 自動テスト・デプロイ
+- **Render** - ホスティングプラットフォーム
+
+## 📦 セットアップ
 
 ### 前提条件
-- Node.js (v20.19+ または v22.12+)
-- npm
+- Node.js 22.x 以上
+- npm または yarn
 
-### ローカル開発環境
+### インストール
 
-1. **依存関係のインストール**
-   ```bash
-   npm install
-   cd client && npm install
-   cd ../server && npm install
-   cd ..
-   ```
-
-2. **開発サーバーの起動**
-   ```bash
-   npm run dev
-   ```
-   - ローカルではSQLiteを自動的に使用します
-   - データベースの初期化は不要です
-
-3. **ブラウザで開く**
-   - フロントエンド: http://localhost:5173
-   - バックエンド: http://localhost:3001
-
-### 本番環境（Render）
-
-詳細な手順は以下のドキュメントを参照してください：
-- **初回デプロイ**: `DEPLOY.md`
-- **PostgreSQL設定**: `DEPLOY_POSTGRESQL.md`
-
-**デプロイ済みURL:**
-- フロントエンド: https://roommate-tracker-app.onrender.com
-- バックエンド: https://roommate-tracker-api.onrender.com
-
-## ⚙️ 動作の仕組み
-
-### アーキテクチャ概要
-
-```
-┌─────────────┐         HTTP         ┌─────────────┐         SQL         ┌──────────┐
-│   Browser   │ ←─────────────────→ │   Express   │ ←──────────────→  │  SQLite  │
-│   (React)   │    REST API (JSON)   │   Server    │                    │    DB    │
-└─────────────┘                       └─────────────┘                    └──────────┘
+1. リポジトリをクローン
+```bash
+git clone https://github.com/usa4040/roommate-tracker.git
+cd roommate-tracker
 ```
 
-### データフロー
-
-1. **初期読み込み**
-   - Reactアプリが起動すると、`useData`フックが自動的にAPIを呼び出す
-   - `/api/users`, `/api/transactions`, `/api/balance`から全データを取得
-   - 取得したデータをReactのstateに保存
-
-2. **経費の追加**
-   - ユーザーがフォームに入力 → `AddTransaction`コンポーネント
-   - `POST /api/transactions`でサーバーに送信
-   - サーバーがSQLiteにデータを保存
-   - 成功後、全データを再取得して画面を更新
-
-3. **収支の計算**
-   - サーバー側で全ユーザーの支払い総額を集計
-   - 総額 ÷ 人数 = 一人あたりの負担額
-   - 各ユーザーの支払額 - 負担額 = 収支
-   - プラスなら「受取予定」、マイナスなら「支払予定」
-
-### データベーススキーマ
-
-**開発環境（SQLite）:**
-```sql
--- ユーザーテーブル
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    avatar TEXT
-);
-
--- 取引テーブル
-CREATE TABLE transactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    payer_id INTEGER NOT NULL,
-    amount REAL NOT NULL,
-    description TEXT,
-    date TEXT,
-    FOREIGN KEY (payer_id) REFERENCES users(id)
-);
+2. バックエンドのセットアップ
+```bash
+cd server
+npm install
+npm run dev
 ```
 
-**本番環境（PostgreSQL）:**
-```sql
--- ユーザーテーブル
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    avatar TEXT
-);
-
--- 取引テーブル
-CREATE TABLE transactions (
-    id SERIAL PRIMARY KEY,
-    payer_id INTEGER NOT NULL,
-    amount REAL NOT NULL,
-    description TEXT,
-    date TEXT,
-    FOREIGN KEY (payer_id) REFERENCES users(id)
-);
+3. フロントエンドのセットアップ（別のターミナルで）
+```bash
+cd client
+npm install
+npm run dev
 ```
 
-## 🧩 主要コンポーネント
-
-### 1. Layout.jsx
-**役割:** アプリ全体のレイアウトを提供
-
-```javascript
-// ヘッダー（ロゴとタイトル）と子コンポーネントを表示
-<Layout>
-  {children}
-</Layout>
+4. ブラウザで開く
+```
+http://localhost:5174
 ```
 
-### 2. Dashboard.jsx
-**役割:** 収支サマリーの表示
+## 🌐 本番環境
 
-**受け取るProps:**
-- `balance` - 各ユーザーの収支データ
-- `users` - ユーザー一覧
+本番環境では以下の設定が必要です：
 
-**表示内容:**
-- 各ユーザーの支払額
-- 受取予定額 / 支払予定額
-- 精算済みの表示
+### 環境変数
 
-**計算ロジック:**
-```javascript
-// プラスの場合：この人が受け取る金額
-// マイナスの場合：この人が支払う金額
-const isOwed = b.diff > 0;
+**バックエンド (`server/.env`)**
+```env
+NODE_ENV=production
+PORT=3001
+DATABASE_URL=postgresql://user:password@host:port/database
+CLIENT_URL=https://your-frontend-url.com
 ```
 
-### 3. UserManagement.jsx
-**役割:** ルームメイトの管理
-
-**機能:**
-- ユーザーの追加
-- ユーザー名の編集（名前をクリック）
-- ユーザーの削除（×ボタン）
-
-**受け取るProps:**
-- `users` - ユーザー一覧
-- `onAddUser(name)` - ユーザー追加関数
-- `onUpdateUser(id, name)` - ユーザー更新関数
-- `onDeleteUser(id)` - ユーザー削除関数
-
-**削除時の安全機能:**
-```javascript
-// 取引履歴があるユーザーは削除できない
-if (!success) {
-    alert('ユーザーの削除に失敗しました。取引履歴がある可能性があります。');
-}
+**フロントエンド (`client/.env`)**
+```env
+VITE_API_URL=https://your-backend-url.com/api
 ```
 
-### 4. AddTransaction.jsx
-**役割:** 経費の記録フォーム
+## 🔄 CI/CD パイプライン
 
-**フォーム項目:**
-1. 誰が支払ったか（複数ボタンから選択）
-2. 金額（数値入力）
-3. 内容（テキスト入力）
-4. 日付（日付ピッカー）
+このプロジェクトは GitHub Actions を使用した自動化されたCI/CDパイプラインを持っています：
 
-**開閉式UI:**
-- 閉じている時：「経費を追加」ボタン
-- 開いている時：入力フォーム
+### ワークフロー
 
-### 5. TransactionList.jsx
-**役割:** 取引履歴の表示
+1. **テスト実行**
+   - バックエンドテスト（Jest）
+   - フロントエンドテスト（Vitest）
+   - カバレッジレポート生成
 
-**表示内容:**
-- 経費の内容
-- 支払った人
-- 日付
-- 金額
+2. **ビルドチェック**
+   - バックエンドビルド検証
+   - フロントエンドビルド検証
 
-**データソート:**
-```javascript
-// サーバー側で日付の降順で取得
-ORDER BY date DESC
+3. **自動デプロイ**
+   - mainブランチへのpush時に自動デプロイ
+   - Renderへのデプロイフック
+
+### デプロイ設定
+
+Renderでの自動デプロイを有効にするには、GitHubリポジトリのSecretsに以下を設定：
+
+```
+RENDER_DEPLOY_HOOK_URL=https://api.render.com/deploy/srv-xxxxx
 ```
 
-### 6. useData.js (カスタムフック)
-**役割:** データの取得と操作を一元管理
+## 📝 開発ワークフロー
 
-**提供する機能:**
-```javascript
-const { 
-  users,              // ユーザー一覧
-  transactions,       // 取引一覧
-  balance,            // 収支データ
-  loading,            // 読み込み中フラグ
-  error,              // エラーメッセージ
-  addTransaction,     // 経費追加
-  addUser,            // ユーザー追加
-  updateUser,         // ユーザー更新
-  deleteUser,         // ユーザー削除
-  refresh             // データ再取得
-} = useData();
+1. 新しいブランチを作成
+```bash
+git checkout -b feature/your-feature
 ```
 
-**実装パターン:**
-```javascript
-// 操作後は必ずデータを再取得
-const addTransaction = async (transaction) => {
-    const res = await fetch(...);
-    await fetchData();  // 再取得
-    return true;
-};
+2. 変更を実装し、テストを追加
+
+3. テストが通ることを確認
+```bash
+npm test
 ```
 
-## 🔄 データフロー
-
-### 起動時のデータ取得フロー
-```
-1. App.jsx マウント
-    ↓
-2. useData() 実行
-    ↓
-3. useEffect でfetchData()実行
-    ↓
-4. 並列で3つのAPIリクエスト
-   - GET /api/users
-   - GET /api/transactions
-   - GET /api/balance
-    ↓
-5. データをstateに保存
-    ↓
-6. 各コンポーネントに props として渡す
+4. コミットしてプッシュ
+```bash
+git add .
+git commit -m "✨ Add your feature"
+git push origin feature/your-feature
 ```
 
-### 経費追加時のフロー
-```
-1. AddTransaction で「保存」クリック
-    ↓
-2. onAdd(formData) 実行
-    ↓
-3. useData の addTransaction() 実行
-    ↓
-4. POST /api/transactions
-    ↓
-5. サーバーがDBに保存
-    ↓
-6. fetchData() で全データ再取得
-    ↓
-7. 画面が自動更新
-```
+5. Pull Requestを作成
+   - CI/CDが自動的にテストを実行
+   - 全てのテストが通ったらマージ可能
 
-### 収支計算のフロー
-```
-1. GET /api/balance リクエスト
-    ↓
-2. サーバー側で計算:
-   - 全トランザクションを集計
-   - 各ユーザーの支払い総額を取得
-   - 総額 ÷ ユーザー数 = 一人当たりの負担額
-   - 支払い総額 - 負担額 = 収支
-    ↓
-3. 結果をJSON形式で返す:
-   {
-     user_id: 1,
-     paid: 1000,      // この人が支払った額
-     diff: 500        // 収支（プラスなら受取、マイナスなら支払）
-   }
-    ↓
-4. Dashboard が受け取って表示
-```
+## 🤝 コントリビューション
 
-## 📡 API仕様
-
-### ユーザー関連
-
-#### GET /api/users
-全ユーザーを取得
-
-**レスポンス:**
-```json
-{
-  "message": "success",
-  "data": [
-    {
-      "id": 1,
-      "name": "ユーザーA",
-      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=ユーザーA"
-    }
-  ]
-}
-```
-
-#### POST /api/users
-新しいユーザーを作成
-
-**リクエスト:**
-```json
-{
-  "name": "新しいユーザー",
-  "avatar": "https://..." // オプション
-}
-```
-
-**レスポンス:**
-```json
-{
-  "message": "success",
-  "id": 3,
-  "data": { ... }
-}
-```
-
-#### PUT /api/users/:id
-ユーザー名を更新
-
-**リクエスト:**
-```json
-{
-  "name": "更新後の名前"
-}
-```
-
-#### DELETE /api/users/:id
-ユーザーを削除
-
-**制約:** 取引履歴があるユーザーは削除不可
-
-### 取引関連
-
-#### GET /api/transactions
-全取引を取得（日付降順）
-
-**レスポンス:**
-```json
-{
-  "message": "success",
-  "data": [
-    {
-      "id": 1,
-      "payer_id": 1,
-      "payer_name": "ユーザーA",
-      "amount": 1000,
-      "description": "家賃",
-      "date": "2025-11-27"
-    }
-  ]
-}
-```
-
-#### POST /api/transactions
-新しい取引を追加
-
-**リクエスト:**
-```json
-{
-  "payer_id": 1,
-  "amount": 1000,
-  "description": "家賃",
-  "date": "2025-11-27"
-}
-```
-
-#### DELETE /api/transactions/:id
-取引を削除
-
-**レスポンス:**
-```json
-{
-  "message": "deleted",
-  "changes": 1
-}
-```
-
-### 収支関連
-
-#### GET /api/balance
-全ユーザーの収支を取得
-
-**レスポンス:**
-```json
-{
-  "message": "success",
-  "data": [
-    {
-      "user_id": 1,
-      "paid": 1000,
-      "diff": 500
-    }
-  ],
-  "total_spent": 1000,
-  "share_per_person": 500
-}
-```
-
-## 🎨 デザインシステム
-
-### カラーパレット
-```css
---bg-primary: #0f172a;        /* ダークブルー背景 */
---bg-secondary: #1e293b;      /* カード背景 */
---text-primary: #f1f5f9;      /* メインテキスト */
---text-secondary: #94a3b8;    /* 補助テキスト */
---accent-primary: #8b5cf6;    /* アクセントカラー（紫） */
-```
-
-### デザイン特徴
-- **ダークモード**: 目に優しいダークテーマ
-- **グラスモーフィズム**: 半透明のカード
-- **アニメーション**: フェードイン、ホバーエフェクト
-- **グラデーション**: アクセント要素に使用
-- **日本語フォント**: システムフォントで最適化
-
-## 📝 開発のポイント
-
-### 1. 状態管理
-- Reactの`useState`と`useEffect`のみを使用
-- 複雑な状態管理ライブラリは不要
-- カスタムフック`useData`で一元管理
-
-### 2. エラーハンドリング
-```javascript
-try {
-    const res = await fetch(...);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-} catch (err) {
-    setError(err.message);
-}
-```
-
-### 3. 自動再取得
-- データ変更後は必ず`fetchData()`を実行
-- 常に最新のデータを表示
-
-### 4. モーダル実装
-- `window.confirm`ではなくカスタムモーダル
-- 状態管理で表示/非表示を制御
-
-## 🔧 今後の拡張案
-
-- [ ] ユーザー認証機能
-- [ ] 経費のカテゴリ分類
-- [ ] 月別フィルター・表示
-- [ ] グラフによる可視化
-- [ ] 支払い履歴のエクスポート（CSV）
-- [ ] 複数のルームシェア管理
-- [ ] 精算リマインダー機能
-- [ ] レスポンシブデザインの改善
-- [ ] 経費の編集機能
-- [ ] 精算履歴の保存
-
-## 📊 実装済みの機能
-
-- ✅ ユーザー管理（追加・編集・削除）
-- ✅ 経費管理（追加・削除）
-- ✅ 自動収支計算
-- ✅ PostgreSQLデータ永続化
-- ✅ Renderデプロイ対応
-- ✅ 日本語UI
-- ✅ 削除確認モーダル
+プルリクエストを歓迎します！大きな変更の場合は、まずissueを開いて変更内容を議論してください。
 
 ## 📄 ライセンス
 
-MIT
+MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
 
-## 🙋 サポート
+## 👥 作者
 
-質問や問題がある場合は、GitHubのIssuesでお知らせください。
+- GitHub: [@usa4040](https://github.com/usa4040)
+
+## 🙏 謝辞
+
+- [React](https://react.dev/)
+- [Express](https://expressjs.com/)
+- [Socket.IO](https://socket.io/)
+- [Zod](https://zod.dev/)
+- [Render](https://render.com/)
