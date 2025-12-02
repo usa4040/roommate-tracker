@@ -70,11 +70,13 @@ export interface UseDataReturn {
     loading: boolean;
     error: string | null;
     addTransaction: (transaction: TransactionInput) => Promise<boolean>;
+    updateTransaction: (id: number, transaction: TransactionInput) => Promise<boolean>;
     addUser: (name: string) => Promise<boolean>;
     updateUser: (id: number, name: string) => Promise<boolean>;
     deleteUser: (id: number) => Promise<boolean>;
     deleteTransaction: (id: number) => Promise<boolean>;
     addPayment: (payment: PaymentInput) => Promise<boolean>;
+    updatePayment: (id: number, payment: PaymentInput) => Promise<boolean>;
     deletePayment: (id: number) => Promise<boolean>;
     refresh: () => Promise<void>;
 }

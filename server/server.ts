@@ -193,6 +193,44 @@ app.delete('/api/transactions/:id', validateParams(idParamSchema), (req: Request
     });
 });
 
+// Update a transaction
+app.put('/api/transactions/:id', validateParams(idParamSchema), validateBody(transactionInputSchema), (req: Request, res: Response) => {
+    const transactionId = req.params.id;
+    const { payer_id, amount, description, date } = req.body;
+
+    const sql = 'UPDATE transactions SET payer_id = ?, amount = ?, description = ?, date = ? WHERE id = ?';
+
+    db.run(sql, [payer_id, amount, description, date, transactionId], function (err) {
+        if (err) {
+            res.status(400).json({ error: err.message } as ApiError);
+            return;
+        }
+
+        if (this.changes === 0) {
+            res.status(404).json({ error: 'Transaction not found' } as ApiError);
+            return;
+        }
+
+        const updatedTransaction = {
+            id: parseInt(transactionId),
+            payer_id,
+            amount,
+            description,
+            date
+        };
+
+        res.json({
+            message: "success",
+            data: updatedTransaction,
+            changes: this.changes
+        });
+
+        // Notify all clients about the data update
+        io.emit('data-updated', { type: 'transaction-updated', data: updatedTransaction });
+    });
+});
+
+
 // Get all payments
 app.get('/api/payments', (_req: Request, res: Response) => {
     const sql = `
@@ -259,6 +297,45 @@ app.delete('/api/payments/:id', validateParams(idParamSchema), (req: Request, re
         io.emit('data-updated', { type: 'payment-deleted', id: paymentId });
     });
 });
+
+// Update a payment
+app.put('/api/payments/:id', validateParams(idParamSchema), validateBody(paymentInputSchema), (req: Request, res: Response) => {
+    const paymentId = req.params.id;
+    const { from_user_id, to_user_id, amount, description, date } = req.body;
+
+    const sql = 'UPDATE payments SET from_user_id = ?, to_user_id = ?, amount = ?, description = ?, date = ? WHERE id = ?';
+
+    db.run(sql, [from_user_id, to_user_id, amount, description, date, paymentId], function (err) {
+        if (err) {
+            res.status(400).json({ error: err.message } as ApiError);
+            return;
+        }
+
+        if (this.changes === 0) {
+            res.status(404).json({ error: 'Payment not found' } as ApiError);
+            return;
+        }
+
+        const updatedPayment = {
+            id: parseInt(paymentId),
+            from_user_id,
+            to_user_id,
+            amount,
+            description,
+            date
+        };
+
+        res.json({
+            message: "success",
+            data: updatedPayment,
+            changes: this.changes
+        });
+
+        // Notify all clients about the data update
+        io.emit('data-updated', { type: 'payment-updated', data: updatedPayment });
+    });
+});
+
 
 // Get Balance
 // Calculate balance considering both transactions and payments

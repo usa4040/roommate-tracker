@@ -204,6 +204,43 @@ export const useData = (): UseDataReturn => {
         }
     };
 
+    const updateTransaction = async (id: number, transaction: TransactionInput): Promise<boolean> => {
+        const toastId = toast.loading('取引を更新中...');
+        try {
+            // Validate input before sending
+            const validated = transactionInputSchema.parse(transaction);
+
+            const res = await fetch(`${API_URL}/transactions/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(validated),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                if (errorData.details) {
+                    const errorMessages = errorData.details.map((d: any) => d.message).join(', ');
+                    throw new Error(`入力エラー: ${errorMessages}`);
+                }
+                throw new Error(errorData.error || 'Failed to update transaction');
+            }
+
+            const data: ApiResponse<Transaction> = await res.json();
+            if (data.error) throw new Error(data.error);
+            await fetchData();
+            toast.success('取引を更新しました', { id: toastId });
+            return true;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
+            return false;
+        }
+    };
+
+
     const addPayment = async (payment: PaymentInput): Promise<boolean> => {
         const toastId = toast.loading('返済を記録中...');
         try {
@@ -264,6 +301,43 @@ export const useData = (): UseDataReturn => {
         }
     };
 
+    const updatePayment = async (id: number, payment: PaymentInput): Promise<boolean> => {
+        const toastId = toast.loading('返済を更新中...');
+        try {
+            // Validate input before sending
+            const validated = paymentInputSchema.parse(payment);
+
+            const res = await fetch(`${API_URL}/payments/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(validated),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                if (errorData.details) {
+                    const errorMessages = errorData.details.map((d: any) => d.message).join(', ');
+                    throw new Error(`入力エラー: ${errorMessages}`);
+                }
+                throw new Error(errorData.error || 'Failed to update payment');
+            }
+
+            const data: ApiResponse<Payment> = await res.json();
+            if (data.error) throw new Error(data.error);
+            await fetchData();
+            toast.success('返済を更新しました', { id: toastId });
+            return true;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            toast.error(`エラー: ${errorMessage}`, { id: toastId });
+            setError(errorMessage);
+            return false;
+        }
+    };
+
+
     useEffect(() => {
         fetchData();
 
@@ -290,11 +364,13 @@ export const useData = (): UseDataReturn => {
         loading,
         error,
         addTransaction,
+        updateTransaction,
         addUser,
         updateUser,
         deleteUser,
         deleteTransaction,
         addPayment,
+        updatePayment,
         deletePayment,
         refresh: fetchData
     };
