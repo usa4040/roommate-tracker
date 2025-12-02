@@ -1,9 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import TransactionList from '../components/TransactionList';
-import type { Transaction, Payment } from '../types';
+import type { Transaction, Payment, User } from '../types';
 
 describe('TransactionList Component', () => {
+    const mockUsers: User[] = [
+        { id: 1, name: 'ユーザー1', avatar: 'https://example.com/avatar1.png' },
+        { id: 2, name: 'ユーザー2', avatar: 'https://example.com/avatar2.png' }
+    ];
+
     const mockTransactions: Transaction[] = [
         {
             id: 1,
@@ -38,6 +44,8 @@ describe('TransactionList Component', () => {
 
     const mockDeleteTransaction = vi.fn().mockResolvedValue(true);
     const mockDeletePayment = vi.fn().mockResolvedValue(true);
+    const mockUpdateTransaction = vi.fn().mockResolvedValue(true);
+    const mockUpdatePayment = vi.fn().mockResolvedValue(true);
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -48,8 +56,11 @@ describe('TransactionList Component', () => {
             <TransactionList
                 transactions={mockTransactions}
                 payments={mockPayments}
+                users={mockUsers}
                 onDeleteTransaction={mockDeleteTransaction}
                 onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
             />
         );
 
@@ -61,8 +72,11 @@ describe('TransactionList Component', () => {
             <TransactionList
                 transactions={mockTransactions}
                 payments={mockPayments}
+                users={mockUsers}
                 onDeleteTransaction={mockDeleteTransaction}
                 onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
             />
         );
 
@@ -75,8 +89,11 @@ describe('TransactionList Component', () => {
             <TransactionList
                 transactions={mockTransactions}
                 payments={mockPayments}
+                users={mockUsers}
                 onDeleteTransaction={mockDeleteTransaction}
                 onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
             />
         );
 
@@ -88,8 +105,11 @@ describe('TransactionList Component', () => {
             <TransactionList
                 transactions={mockTransactions}
                 payments={mockPayments}
+                users={mockUsers}
                 onDeleteTransaction={mockDeleteTransaction}
                 onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
             />
         );
 
@@ -106,27 +126,137 @@ describe('TransactionList Component', () => {
             <TransactionList
                 transactions={[]}
                 payments={[]}
+                users={mockUsers}
                 onDeleteTransaction={mockDeleteTransaction}
                 onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
             />
         );
 
         expect(screen.getByText('まだ取引がありません。')).toBeInTheDocument();
     });
 
-    it('削除ボタンが表示される', () => {
+    it('編集ボタンが表示される', () => {
         const { container } = render(
             <TransactionList
                 transactions={mockTransactions}
                 payments={mockPayments}
+                users={mockUsers}
                 onDeleteTransaction={mockDeleteTransaction}
                 onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
             />
         );
 
-        // Check that delete buttons exist
-        const deleteButtons = container.querySelectorAll('button');
-        expect(deleteButtons.length).toBeGreaterThan(0);
+        // Check that edit and delete buttons exist
+        const buttons = container.querySelectorAll('button');
+        expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    it('編集ボタンをクリックすると編集フォームが表示される', async () => {
+        const user = userEvent.setup();
+        const { container } = render(
+            <TransactionList
+                transactions={mockTransactions}
+                payments={mockPayments}
+                users={mockUsers}
+                onDeleteTransaction={mockDeleteTransaction}
+                onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
+            />
+        );
+
+        // Find and click the first edit button
+        const buttons = container.querySelectorAll('button');
+        const editButton = Array.from(buttons).find(btn => btn.getAttribute('title') === '編集');
+
+        if (editButton) {
+            await user.click(editButton);
+
+            // Check if edit form appears
+            await waitFor(() => {
+                expect(screen.getByText('保存')).toBeInTheDocument();
+                expect(screen.getByText('キャンセル')).toBeInTheDocument();
+            });
+        }
+    });
+
+    it('編集フォームで入力フィールドが表示される', async () => {
+        const user = userEvent.setup();
+        const { container } = render(
+            <TransactionList
+                transactions={mockTransactions}
+                payments={mockPayments}
+                users={mockUsers}
+                onDeleteTransaction={mockDeleteTransaction}
+                onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
+            />
+        );
+
+        // Find and click the first edit button
+        const buttons = container.querySelectorAll('button');
+        const editButton = Array.from(buttons).find(btn => btn.getAttribute('title') === '編集');
+
+        if (editButton) {
+            await user.click(editButton);
+
+            // Wait for edit form to appear
+            await waitFor(() => {
+                expect(screen.getByText('保存')).toBeInTheDocument();
+                expect(screen.getByText('キャンセル')).toBeInTheDocument();
+            });
+
+            // Check that input fields are present
+            const amountInputs = container.querySelectorAll('input[type="number"]');
+            expect(amountInputs.length).toBeGreaterThan(0);
+
+            const textInputs = container.querySelectorAll('input[type="text"]');
+            expect(textInputs.length).toBeGreaterThan(0);
+        }
+    });
+    it('編集フォームでキャンセルボタンをクリックすると編集モードが終了する', async () => {
+        const user = userEvent.setup();
+        const { container } = render(
+            <TransactionList
+                transactions={mockTransactions}
+                payments={mockPayments}
+                users={mockUsers}
+                onDeleteTransaction={mockDeleteTransaction}
+                onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
+            />
+        );
+
+        // Find and click the first edit button
+        const buttons = container.querySelectorAll('button');
+        const editButton = Array.from(buttons).find(btn => btn.getAttribute('title') === '編集');
+
+        if (editButton) {
+            await user.click(editButton);
+
+            // Wait for edit form to appear
+            await waitFor(() => {
+                expect(screen.getByText('キャンセル')).toBeInTheDocument();
+            });
+
+            // Click cancel button
+            const cancelButton = screen.getByText('キャンセル');
+            await user.click(cancelButton);
+
+            // Check if edit form disappears
+            await waitFor(() => {
+                expect(screen.queryByText('保存')).not.toBeInTheDocument();
+            });
+
+            // Update function should not have been called
+            expect(mockUpdateTransaction).not.toHaveBeenCalled();
+        }
     });
 
     it('複数の取引が表示される', () => {
@@ -134,8 +264,11 @@ describe('TransactionList Component', () => {
             <TransactionList
                 transactions={mockTransactions}
                 payments={mockPayments}
+                users={mockUsers}
                 onDeleteTransaction={mockDeleteTransaction}
                 onDeletePayment={mockDeletePayment}
+                onUpdateTransaction={mockUpdateTransaction}
+                onUpdatePayment={mockUpdatePayment}
             />
         );
 

@@ -92,12 +92,36 @@ const createTestApp = () => {
         res.json({ message: 'deleted', changes: initialLength - transactions.length });
     });
 
+    app.put('/api/transactions/:id', validateParams(idParamSchema), validateBody(transactionInputSchema), (req, res) => {
+        const transactionId = parseInt(req.params.id);
+        const { payer_id, amount, description, date } = req.body;
+        const transactionIndex = transactions.findIndex(t => t.id === transactionId);
+
+        if (transactionIndex === -1) {
+            res.status(404).json({ error: 'Transaction not found' });
+            return;
+        }
+
+        transactions[transactionIndex] = {
+            ...transactions[transactionIndex],
+            payer_id,
+            amount,
+            description,
+            date
+        };
+
+        res.json({
+            message: 'success',
+            data: transactions[transactionIndex],
+            changes: 1
+        });
+    });
+
     // Payments endpoints
     app.get('/api/payments', (_req, res) => {
         const paymentsWithNames = payments.map(p => ({
             ...p,
             from_user_name: users.find(u => u.id === p.from_user_id)?.name || 'Unknown',
-            to_user_name: users.find(u => u.id === p.to_user_id)?.name || 'Unknown'
         }));
         res.json({ message: 'success', data: paymentsWithNames });
     });
@@ -117,6 +141,32 @@ const createTestApp = () => {
         payments = payments.filter(p => p.id !== paymentId);
 
         res.json({ message: 'deleted', changes: initialLength - payments.length });
+    });
+
+    app.put('/api/payments/:id', validateParams(idParamSchema), validateBody(paymentInputSchema), (req, res) => {
+        const paymentId = parseInt(req.params.id);
+        const { from_user_id, to_user_id, amount, description, date } = req.body;
+        const paymentIndex = payments.findIndex(p => p.id === paymentId);
+
+        if (paymentIndex === -1) {
+            res.status(404).json({ error: 'Payment not found' });
+            return;
+        }
+
+        payments[paymentIndex] = {
+            ...payments[paymentIndex],
+            from_user_id,
+            to_user_id,
+            amount,
+            description,
+            date
+        };
+
+        res.json({
+            message: 'success',
+            data: payments[paymentIndex],
+            changes: 1
+        });
     });
 
     return app;
@@ -302,6 +352,161 @@ describe('API Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.message).toBe('deleted');
+        });
+    });
+
+    describe('PUT /api/transactions/:id', () => {
+        it('経費を更新できる', async () => {
+            // First create a transaction
+            const createResponse = await request(app)
+                .post('/api/transactions')
+                .send({
+                    payer_id: 1,
+                    amount: 1000,
+                    description: 'テスト経費',
+                    date: '2024-01-01'
+                });
+
+            const transactionId = createResponse.body.data.id;
+            const updatedData = {
+                payer_id: 2,
+                amount: 2000,
+                description: '更新された経費',
+                date: '2024-01-02'
+            };
+
+            const response = await request(app)
+                .put(`/api/transactions/${transactionId}`)
+                .send(updatedData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('success');
+            expect(response.body.data.amount).toBe(updatedData.amount);
+            expect(response.body.data.description).toBe(updatedData.description);
+            expect(response.body.changes).toBe(1);
+        });
+
+        it('存在しない経費の更新で404を返す', async () => {
+            const updatedData = {
+                payer_id: 1,
+                amount: 2000,
+                description: '更新された経費',
+                date: '2024-01-02'
+            };
+
+            const response = await request(app)
+                .put('/api/transactions/999')
+                .send(updatedData);
+
+            expect(response.status).toBe(404);
+            expect(response.body.error).toBe('Transaction not found');
+        });
+
+        it('無効なデータで経費更新を拒否する', async () => {
+            // First create a transaction
+            const createResponse = await request(app)
+                .post('/api/transactions')
+                .send({
+                    payer_id: 1,
+                    amount: 1000,
+                    description: 'テスト経費',
+                    date: '2024-01-01'
+                });
+
+            const transactionId = createResponse.body.data.id;
+            const invalidData = {
+                payer_id: 1,
+                amount: -100, // 負の金額
+                description: 'テスト経費',
+                date: '2024-01-01'
+            };
+
+            const response = await request(app)
+                .put(`/api/transactions/${transactionId}`)
+                .send(invalidData);
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('バリデーションエラー');
+        });
+    });
+
+    describe('PUT /api/payments/:id', () => {
+        it('返済を更新できる', async () => {
+            // First create a payment
+            const createResponse = await request(app)
+                .post('/api/payments')
+                .send({
+                    from_user_id: 1,
+                    to_user_id: 2,
+                    amount: 500,
+                    description: 'テスト返済',
+                    date: '2024-01-01'
+                });
+
+            const paymentId = createResponse.body.data.id;
+            const updatedData = {
+                from_user_id: 2,
+                to_user_id: 1,
+                amount: 1000,
+                description: '更新された返済',
+                date: '2024-01-02'
+            };
+
+            const response = await request(app)
+                .put(`/api/payments/${paymentId}`)
+                .send(updatedData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('success');
+            expect(response.body.data.amount).toBe(updatedData.amount);
+            expect(response.body.data.description).toBe(updatedData.description);
+            expect(response.body.changes).toBe(1);
+        });
+
+        it('存在しない返済の更新で404を返す', async () => {
+            const updatedData = {
+                from_user_id: 1,
+                to_user_id: 2,
+                amount: 1000,
+                description: '更新された返済',
+                date: '2024-01-02'
+            };
+
+            const response = await request(app)
+                .put('/api/payments/999')
+                .send(updatedData);
+
+            expect(response.status).toBe(404);
+            expect(response.body.error).toBe('Payment not found');
+        });
+
+        it('同じユーザー間の返済更新を拒否する', async () => {
+            // First create a payment
+            const createResponse = await request(app)
+                .post('/api/payments')
+                .send({
+                    from_user_id: 1,
+                    to_user_id: 2,
+                    amount: 500,
+                    description: 'テスト返済',
+                    date: '2024-01-01'
+                });
+
+            const paymentId = createResponse.body.data.id;
+            const invalidData = {
+                from_user_id: 1,
+                to_user_id: 1, // 同じユーザー
+                amount: 1000,
+                description: 'テスト返済',
+                date: '2024-01-02'
+            };
+
+            const response = await request(app)
+                .put(`/api/payments/${paymentId}`)
+                .send(invalidData);
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('バリデーションエラー');
         });
     });
 });
