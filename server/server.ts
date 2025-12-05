@@ -1,10 +1,14 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import db from './db';
 import { validateBody, validateParams } from './middleware';
+import { authenticate, requireAdmin } from './authMiddleware';
+import { hashPassword, comparePassword, generateToken } from './auth';
+import { migrateAuthFields } from './migrations';
 import {
     userInputSchema,
     userUpdateSchema,
@@ -43,6 +47,12 @@ const io = new SocketIOServer(server, {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+app.use(cookieParser());
+
+// Run migrations
+migrateAuthFields().catch(err => {
+    console.error('Migration failed:', err);
+});
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
@@ -52,6 +62,139 @@ io.on('connection', (socket) => {
         console.log('Client disconnected:', socket.id);
     });
 });
+
+// ========== Authentication Endpoints ==========
+
+// Login
+app.post('/api/auth/login', async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        res.status(400).json({ error: 'Email and password are required' });
+        return;
+    }
+
+    db.get(
+        "SELECT id, name, email, password, role, avatar FROM users WHERE email = ?",
+        [email],
+        async (err, user: any) => {
+            if (err) {
+                res.status(500).json({ error: 'Database error' });
+                return;
+            }
+
+            if (!user || !user.password) {
+                res.status(401).json({ error: 'Invalid credentials' });
+                return;
+            }
+
+            const isValid = await comparePassword(password, user.password);
+            if (!isValid) {
+                res.status(401).json({ error: 'Invalid credentials' });
+                return;
+            }
+
+            const token = generateToken({
+                userId: user.id,
+                email: user.email,
+                role: user.role || 'user'
+            });
+
+            res.json({
+                message: 'Login successful',
+                token,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    avatar: user.avatar
+                }
+            });
+        }
+    );
+});
+
+// Register
+app.post('/api/auth/register', async (req: Request, res: Response) => {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+        res.status(400).json({ error: 'Name, email, and password are required' });
+        return;
+    }
+
+    // Check if user already exists
+    db.get("SELECT id FROM users WHERE email = ?", [email], async (err, existingUser: any) => {
+        if (err) {
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+
+        if (existingUser) {
+            res.status(409).json({ error: 'User already exists' });
+            return;
+        }
+
+        const hashedPassword = await hashPassword(password);
+        const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+
+        db.run(
+            "INSERT INTO users (name, email, password, role, avatar) VALUES (?, ?, ?, ?, ?)",
+            [name, email, hashedPassword, 'user', avatar],
+            function (err) {
+                if (err) {
+                    res.status(500).json({ error: 'Failed to create user' });
+                    return;
+                }
+
+                const token = generateToken({
+                    userId: this.lastID,
+                    email,
+                    role: 'user'
+                });
+
+                res.status(201).json({
+                    message: 'User created successfully',
+                    token,
+                    user: {
+                        id: this.lastID,
+                        name,
+                        email,
+                        role: 'user',
+                        avatar
+                    }
+                });
+            }
+        );
+    });
+});
+
+// Get current user
+app.get('/api/auth/me', authenticate, (req: Request, res: Response) => {
+    db.get(
+        "SELECT id, name, email, role, avatar FROM users WHERE id = ?",
+        [req.user!.userId],
+        (err, user: any) => {
+            if (err || !user) {
+                res.status(404).json({ error: 'User not found' });
+                return;
+            }
+
+            res.json({
+                message: 'success',
+                user
+            });
+        }
+    );
+});
+
+// Logout (client-side should remove token)
+app.post('/api/auth/logout', (_req: Request, res: Response) => {
+    res.json({ message: 'Logged out successfully' });
+});
+
+// ========== User Endpoints ==========
 
 // Get all users
 app.get('/api/users', (_req: Request, res: Response) => {
