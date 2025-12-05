@@ -2,6 +2,7 @@ import React from 'react';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
+import Charts from './components/Charts';
 import AddTransaction from './components/AddTransaction';
 import TransactionList from './components/TransactionList';
 import UserManagement from './components/UserManagement';
@@ -75,6 +76,11 @@ function App() {
             <ConnectionStatus />
             <Layout>
                 <Dashboard balance={balance} users={users} />
+                <Charts
+                    transactions={transactions}
+                    payments={payments}
+                    users={users}
+                />
                 <div style={{ marginTop: '2rem' }}>
                     <UserManagement
                         users={users}
