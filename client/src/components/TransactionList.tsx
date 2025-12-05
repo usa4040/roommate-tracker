@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
 import type { Transaction, Payment, TransactionOrPayment, TransactionInput, PaymentInput } from '../types';
 
 interface TransactionListProps {
@@ -13,6 +13,8 @@ interface TransactionListProps {
 }
 
 type DeleteType = 'transaction' | 'payment';
+type SortField = 'date' | 'amount';
+type SortOrder = 'asc' | 'desc';
 
 const TransactionList: React.FC<TransactionListProps> = ({
     transactions,
@@ -29,11 +31,60 @@ const TransactionList: React.FC<TransactionListProps> = ({
     const [editingType, setEditingType] = useState<DeleteType | null>(null);
     const [editForm, setEditForm] = useState<any>({});
 
-    // Combine transactions and payments into a single list
-    const allItems: TransactionOrPayment[] = [
-        ...(transactions || []).map(t => ({ ...t, type: 'transaction' as const })),
-        ...(payments || []).map(p => ({ ...p, type: 'payment' as const }))
-    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Filter and search states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterType, setFilterType] = useState<'all' | 'transaction' | 'payment'>('all');
+    const [filterUser, setFilterUser] = useState<number | 'all'>('all');
+    const [sortField, setSortField] = useState<SortField>('date');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+    // Combine, filter, search, and sort items
+    const filteredAndSortedItems = useMemo(() => {
+        let items: TransactionOrPayment[] = [
+            ...(transactions || []).map(t => ({ ...t, type: 'transaction' as const })),
+            ...(payments || []).map(p => ({ ...p, type: 'payment' as const }))
+        ];
+
+        // Apply type filter
+        if (filterType !== 'all') {
+            items = items.filter(item => item.type === filterType);
+        }
+
+        // Apply user filter
+        if (filterUser !== 'all') {
+            items = items.filter(item => {
+                if (item.type === 'transaction') {
+                    return item.payer_id === filterUser;
+                } else {
+                    return item.from_user_id === filterUser || item.to_user_id === filterUser;
+                }
+            });
+        }
+
+        // Apply search filter
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            items = items.filter(item => {
+                const description = item.description?.toLowerCase() || '';
+                return description.includes(query);
+            });
+        }
+
+        // Apply sorting
+        items.sort((a, b) => {
+            let comparison = 0;
+
+            if (sortField === 'date') {
+                comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+            } else if (sortField === 'amount') {
+                comparison = a.amount - b.amount;
+            }
+
+            return sortOrder === 'asc' ? comparison : -comparison;
+        });
+
+        return items;
+    }, [transactions, payments, filterType, filterUser, searchQuery, sortField, sortOrder]);
 
     const handleDelete = async (): Promise<void> => {
         if (deleteConfirmId && deleteType) {
@@ -95,16 +146,129 @@ const TransactionList: React.FC<TransactionListProps> = ({
         }
     };
 
+    const toggleSortOrder = () => {
+        setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    };
+
     return (
         <div className="card animate-fade-in">
             <h3 style={{ marginBottom: '1rem' }}>最近の取引</h3>
+
+            {/* Filter and Search UI */}
+            <div style={{
+                display: 'grid',
+                gap: '0.75rem',
+                marginBottom: '1rem',
+                padding: '1rem',
+                background: 'rgba(255,255,255,0.02)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(255,255,255,0.05)'
+            }}>
+                {/* Search */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Search size={18} style={{ color: 'var(--text-secondary)' }} />
+                    <input
+                        type="text"
+                        placeholder="内容で検索..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{
+                            flex: 1,
+                            padding: '0.5rem',
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 'var(--radius-sm)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.9rem'
+                        }}
+                    />
+                </div>
+
+                {/* Filters */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                    {/* Type Filter */}
+                    <div>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                            <Filter size={14} />
+                            種類
+                        </label>
+                        <select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value as 'all' | 'transaction' | 'payment')}
+                            style={{ width: '100%', padding: '0.5rem', fontSize: '0.85rem' }}
+                        >
+                            <option value="all">全て</option>
+                            <option value="transaction">経費のみ</option>
+                            <option value="payment">返済のみ</option>
+                        </select>
+                    </div>
+
+                    {/* User Filter */}
+                    <div>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                            <User size={14} />
+                            ユーザー
+                        </label>
+                        <select
+                            value={filterUser}
+                            onChange={(e) => setFilterUser(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+                            style={{ width: '100%', padding: '0.5rem', fontSize: '0.85rem' }}
+                        >
+                            <option value="all">全員</option>
+                            {users.map(user => (
+                                <option key={user.id} value={user.id}>{user.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Sort */}
+                    <div>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                            {sortOrder === 'asc' ? <SortAsc size={14} /> : <SortDesc size={14} />}
+                            並び替え
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.25rem' }}>
+                            <select
+                                value={sortField}
+                                onChange={(e) => setSortField(e.target.value as SortField)}
+                                style={{ flex: 1, padding: '0.5rem', fontSize: '0.85rem' }}
+                            >
+                                <option value="date">日付</option>
+                                <option value="amount">金額</option>
+                            </select>
+                            <button
+                                onClick={toggleSortOrder}
+                                style={{
+                                    padding: '0.5rem',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    cursor: 'pointer',
+                                    color: 'var(--text-primary)'
+                                }}
+                                title={sortOrder === 'asc' ? '昇順' : '降順'}
+                            >
+                                {sortOrder === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Results count */}
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                    {filteredAndSortedItems.length} 件の取引
+                </div>
+            </div>
+
             <div style={{ display: 'grid', gap: '0.75rem' }}>
-                {allItems.length === 0 && (
+                {filteredAndSortedItems.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-                        まだ取引がありません。
+                        {searchQuery || filterType !== 'all' || filterUser !== 'all'
+                            ? '条件に一致する取引がありません。'
+                            : 'まだ取引がありません。'}
                     </div>
                 )}
-                {allItems.map((item) => {
+                {filteredAndSortedItems.map((item) => {
                     const isPayment = item.type === 'payment';
                     const key = `${item.type}-${item.id}`;
                     const isEditing = editingId === item.id && editingType === item.type;
