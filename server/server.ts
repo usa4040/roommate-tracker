@@ -6,7 +6,7 @@ import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import db from './db';
 import { validateBody, validateParams } from './middleware';
-import { authenticate, requireAdmin } from './authMiddleware';
+import { authenticate } from './authMiddleware';
 import { hashPassword, comparePassword, generateToken } from './auth';
 import { migrateAuthFields } from './migrations';
 import {
