@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X, Search, Filter, SortAsc, SortDesc, Download, FileJson, FileSpreadsheet, BarChart3 } from 'lucide-react';
 import type { Transaction, Payment, TransactionOrPayment, TransactionInput, PaymentInput } from '../types';
+import { exportToCSV, exportToJSON, exportSummary, generateFilename } from '../utils/export';
 
 interface TransactionListProps {
     transactions: Transaction[];
@@ -150,9 +151,110 @@ const TransactionList: React.FC<TransactionListProps> = ({
         setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
     };
 
+    const handleExportCSV = () => {
+        const filename = generateFilename('transactions', 'csv');
+        exportToCSV(filteredAndSortedItems, filename);
+    };
+
+    const handleExportJSON = () => {
+        const filename = generateFilename('transactions', 'json');
+        exportToJSON(filteredAndSortedItems, filename);
+    };
+
+    const handleExportSummary = () => {
+        const filename = generateFilename('summary', 'json');
+        exportSummary(filteredAndSortedItems, users, filename);
+    };
+
     return (
         <div className="card animate-fade-in">
-            <h3 style={{ marginBottom: '1rem' }}>最近の取引</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ margin: 0 }}>最近の取引</h3>
+
+                {/* Export buttons */}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                        onClick={handleExportCSV}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            padding: '0.5rem 0.75rem',
+                            background: 'rgba(34, 197, 94, 0.1)',
+                            border: '1px solid rgba(34, 197, 94, 0.3)',
+                            borderRadius: 'var(--radius-sm)',
+                            color: 'var(--success)',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            transition: 'all 0.2s'
+                        }}
+                        title="CSVでエクスポート"
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(34, 197, 94, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(34, 197, 94, 0.1)';
+                        }}
+                    >
+                        <FileSpreadsheet size={16} />
+                        CSV
+                    </button>
+
+                    <button
+                        onClick={handleExportJSON}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            padding: '0.5rem 0.75rem',
+                            background: 'rgba(59, 130, 246, 0.1)',
+                            border: '1px solid rgba(59, 130, 246, 0.3)',
+                            borderRadius: 'var(--radius-sm)',
+                            color: 'var(--primary)',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            transition: 'all 0.2s'
+                        }}
+                        title="JSONでエクスポート"
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                        }}
+                    >
+                        <FileJson size={16} />
+                        JSON
+                    </button>
+
+                    <button
+                        onClick={handleExportSummary}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            padding: '0.5rem 0.75rem',
+                            background: 'rgba(168, 85, 247, 0.1)',
+                            border: '1px solid rgba(168, 85, 247, 0.3)',
+                            borderRadius: 'var(--radius-sm)',
+                            color: '#a855f7',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            transition: 'all 0.2s'
+                        }}
+                        title="サマリーをエクスポート"
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(168, 85, 247, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(168, 85, 247, 0.1)';
+                        }}
+                    >
+                        <BarChart3 size={16} />
+                        サマリー
+                    </button>
+                </div>
+            </div>
 
             {/* Filter and Search UI */}
             <div style={{
@@ -270,7 +372,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 )}
                 {filteredAndSortedItems.map((item) => {
                     const isPayment = item.type === 'payment';
-                    const key = `${item.type}-${item.id}`;
+                    const key = `${item.type} -${item.id} `;
                     const isEditing = editingId === item.id && editingType === item.type;
 
                     if (isEditing) {
@@ -280,7 +382,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                 padding: '1rem',
                                 background: 'rgba(255,255,255,0.05)',
                                 borderRadius: 'var(--radius-md)',
-                                borderLeft: `3px solid ${isPayment ? 'var(--success)' : 'var(--primary)'}`,
+                                borderLeft: `3px solid ${isPayment ? 'var(--success)' : 'var(--primary)'} `,
                             }}>
                                 <div style={{ display: 'grid', gap: '0.75rem' }}>
                                     {isPayment ? (
@@ -381,7 +483,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             padding: '1rem',
                             background: 'rgba(255,255,255,0.02)',
                             borderRadius: 'var(--radius-md)',
-                            borderLeft: `3px solid ${isPayment ? 'var(--success)' : 'var(--primary)'}`,
+                            borderLeft: `3px solid ${isPayment ? 'var(--success)' : 'var(--primary)'} `,
                             borderBottom: '1px solid rgba(255,255,255,0.05)',
                             position: 'relative',
                             transition: 'all 0.3s ease'
