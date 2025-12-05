@@ -39,6 +39,64 @@ const TransactionList: React.FC<TransactionListProps> = ({
     const [sortField, setSortField] = useState<SortField>('date');
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
+    // Date range filter states
+    const [dateFrom, setDateFrom] = useState<string>('');
+    const [dateTo, setDateTo] = useState<string>('');
+    const [datePreset, setDatePreset] = useState<string>('all');
+
+    // Date preset handler
+    const handleDatePreset = (preset: string) => {
+        setDatePreset(preset);
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+
+        switch (preset) {
+            case 'today':
+                const todayStr = today.toISOString().split('T')[0];
+                setDateFrom(todayStr);
+                setDateTo(todayStr);
+                break;
+            case 'thisWeek':
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                setDateFrom(weekStart.toISOString().split('T')[0]);
+                setDateTo(today.toISOString().split('T')[0]);
+                break;
+            case 'thisMonth':
+                const monthStart = new Date(year, month, 1);
+                setDateFrom(monthStart.toISOString().split('T')[0]);
+                setDateTo(today.toISOString().split('T')[0]);
+                break;
+            case 'lastMonth':
+                const lastMonthStart = new Date(year, month - 1, 1);
+                const lastMonthEnd = new Date(year, month, 0);
+                setDateFrom(lastMonthStart.toISOString().split('T')[0]);
+                setDateTo(lastMonthEnd.toISOString().split('T')[0]);
+                break;
+            case 'last3Months':
+                const threeMonthsAgo = new Date(year, month - 3, 1);
+                setDateFrom(threeMonthsAgo.toISOString().split('T')[0]);
+                setDateTo(today.toISOString().split('T')[0]);
+                break;
+            case 'last6Months':
+                const sixMonthsAgo = new Date(year, month - 6, 1);
+                setDateFrom(sixMonthsAgo.toISOString().split('T')[0]);
+                setDateTo(today.toISOString().split('T')[0]);
+                break;
+            case 'thisYear':
+                const yearStart = new Date(year, 0, 1);
+                setDateFrom(yearStart.toISOString().split('T')[0]);
+                setDateTo(today.toISOString().split('T')[0]);
+                break;
+            case 'all':
+            default:
+                setDateFrom('');
+                setDateTo('');
+                break;
+        }
+    };
+
     // Combine, filter, search, and sort items
     const filteredAndSortedItems = useMemo(() => {
         let items: TransactionOrPayment[] = [
@@ -60,6 +118,14 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     return item.from_user_id === filterUser || item.to_user_id === filterUser;
                 }
             });
+        }
+
+        // Apply date range filter
+        if (dateFrom) {
+            items = items.filter(item => item.date >= dateFrom);
+        }
+        if (dateTo) {
+            items = items.filter(item => item.date <= dateTo);
         }
 
         // Apply search filter
@@ -85,7 +151,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
         });
 
         return items;
-    }, [transactions, payments, filterType, filterUser, searchQuery, sortField, sortOrder]);
+    }, [transactions, payments, filterType, filterUser, searchQuery, sortField, sortOrder, dateFrom, dateTo]);
 
     const handleDelete = async (): Promise<void> => {
         if (deleteConfirmId && deleteType) {
@@ -362,6 +428,132 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             >
                                 {sortOrder === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Date Range Filter */}
+                <div>
+                    <label style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-secondary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        marginBottom: '0.5rem',
+                        fontWeight: 600
+                    }}>
+                        📅 期間フィルター
+                    </label>
+
+                    {/* Date Presets */}
+                    <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '0.5rem',
+                        marginBottom: '0.75rem'
+                    }}>
+                        {[
+                            { value: 'all', label: '全期間' },
+                            { value: 'today', label: '今日' },
+                            { value: 'thisWeek', label: '今週' },
+                            { value: 'thisMonth', label: '今月' },
+                            { value: 'lastMonth', label: '先月' },
+                            { value: 'last3Months', label: '過去3ヶ月' },
+                            { value: 'last6Months', label: '過去6ヶ月' },
+                            { value: 'thisYear', label: '今年' }
+                        ].map(preset => (
+                            <button
+                                key={preset.value}
+                                onClick={() => handleDatePreset(preset.value)}
+                                style={{
+                                    padding: '0.375rem 0.75rem',
+                                    fontSize: '0.8rem',
+                                    background: datePreset === preset.value
+                                        ? 'rgba(139, 92, 246, 0.2)'
+                                        : 'rgba(255,255,255,0.05)',
+                                    border: datePreset === preset.value
+                                        ? '1px solid rgba(139, 92, 246, 0.5)'
+                                        : '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    color: datePreset === preset.value
+                                        ? 'var(--accent-primary)'
+                                        : 'var(--text-secondary)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    whiteSpace: 'nowrap'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (datePreset !== preset.value) {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (datePreset !== preset.value) {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                    }
+                                }}
+                            >
+                                {preset.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Custom Date Range */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <div>
+                            <label style={{
+                                fontSize: '0.7rem',
+                                color: 'var(--text-secondary)',
+                                marginBottom: '0.25rem',
+                                display: 'block'
+                            }}>
+                                開始日
+                            </label>
+                            <input
+                                type="date"
+                                value={dateFrom}
+                                onChange={(e) => {
+                                    setDateFrom(e.target.value);
+                                    setDatePreset('custom');
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.5rem',
+                                    fontSize: '0.85rem',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    color: 'var(--text-primary)'
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{
+                                fontSize: '0.7rem',
+                                color: 'var(--text-secondary)',
+                                marginBottom: '0.25rem',
+                                display: 'block'
+                            }}>
+                                終了日
+                            </label>
+                            <input
+                                type="date"
+                                value={dateTo}
+                                onChange={(e) => {
+                                    setDateTo(e.target.value);
+                                    setDatePreset('custom');
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.5rem',
+                                    fontSize: '0.85rem',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    color: 'var(--text-primary)'
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
