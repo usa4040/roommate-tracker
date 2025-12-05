@@ -43,18 +43,31 @@ export const exportToCSV = (items: TransactionOrPayment[], filename: string = 't
 
     // Add BOM for Excel compatibility with Japanese characters
     const bom = '\uFEFF';
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
 
-    // Create download using data URL (more compatible)
-    const dataUrl = 'data:text/csv;charset=utf-8,' + encodeURIComponent(bom + csvContent);
-
+    // Create download link and trigger download
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = dataUrl;
+    link.href = url;
     link.download = filename;
 
-    // Append to body, click, and remove
+    // Must append to document for Firefox
     document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    // Use requestAnimationFrame to ensure the link is in the DOM before clicking
+    requestAnimationFrame(() => {
+        link.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
+
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 100);
+    });
 
     console.log(`CSV exported: ${filename}`);
 };
@@ -69,18 +82,28 @@ export const exportToJSON = (items: TransactionOrPayment[], filename: string = '
     }
 
     const jsonContent = JSON.stringify(items, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
 
-    // Create download using data URL
-    const dataUrl = 'data:application/json;charset=utf-8,' + encodeURIComponent(jsonContent);
-
+    // Create download link and trigger download
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = dataUrl;
+    link.href = url;
     link.download = filename;
 
-    // Append to body, click, and remove
     document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    requestAnimationFrame(() => {
+        link.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
+
+        setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 100);
+    });
 
     console.log(`JSON exported: ${filename}`);
 };
@@ -146,18 +169,28 @@ export const exportSummary = (
     };
 
     const jsonContent = JSON.stringify(summary, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
 
-    // Create download using data URL
-    const dataUrl = 'data:application/json;charset=utf-8,' + encodeURIComponent(jsonContent);
-
+    // Create download link and trigger download
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = dataUrl;
+    link.href = url;
     link.download = filename;
 
-    // Append to body, click, and remove
     document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    requestAnimationFrame(() => {
+        link.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
+
+        setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 100);
+    });
 
     console.log(`Summary exported: ${filename}`);
 };
