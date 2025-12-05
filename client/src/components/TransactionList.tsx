@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X, Search, Filter, SortAsc, SortDesc, Download, FileJson, FileSpreadsheet, BarChart3 } from 'lucide-react';
+import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X, Search, Filter, SortAsc, SortDesc, FileJson, FileSpreadsheet, BarChart3 } from 'lucide-react';
 import type { Transaction, Payment, TransactionOrPayment, TransactionInput, PaymentInput } from '../types';
 import { exportToCSV, exportToJSON, exportSummary, generateFilename } from '../utils/export';
 
@@ -168,11 +168,18 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
     return (
         <div className="card animate-fade-in">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem',
+                flexWrap: 'wrap',
+                gap: '0.75rem'
+            }}>
                 <h3 style={{ margin: 0 }}>最近の取引</h3>
 
                 {/* Export buttons */}
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className="flex-wrap-mobile" style={{ gap: '0.5rem' }}>
                     <button
                         onClick={handleExportCSV}
                         style={{
@@ -186,7 +193,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             color: 'var(--success)',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            whiteSpace: 'nowrap'
                         }}
                         title="CSVでエクスポート"
                         onMouseEnter={(e) => {
@@ -197,7 +205,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         }}
                     >
                         <FileSpreadsheet size={16} />
-                        CSV
+                        <span className="hide-on-mobile">CSV</span>
                     </button>
 
                     <button
@@ -213,7 +221,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             color: 'var(--primary)',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            whiteSpace: 'nowrap'
                         }}
                         title="JSONでエクスポート"
                         onMouseEnter={(e) => {
@@ -224,7 +233,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         }}
                     >
                         <FileJson size={16} />
-                        JSON
+                        <span className="hide-on-mobile">JSON</span>
                     </button>
 
                     <button
@@ -240,7 +249,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             color: '#a855f7',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            whiteSpace: 'nowrap'
                         }}
                         title="サマリーをエクスポート"
                         onMouseEnter={(e) => {
@@ -251,7 +261,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         }}
                     >
                         <BarChart3 size={16} />
-                        サマリー
+                        <span className="hide-on-mobile">サマリー</span>
                     </button>
                 </div>
             </div>
@@ -287,7 +297,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 </div>
 
                 {/* Filters */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                <div className="grid-3-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
                     {/* Type Filter */}
                     <div>
                         <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>

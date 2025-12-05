@@ -27,18 +27,30 @@ const Dashboard: React.FC<DashboardProps> = ({ balance, users }) => {
                             padding: '1rem',
                             background: 'rgba(255,255,255,0.05)',
                             borderRadius: 'var(--radius-md)',
-                            border: '1px solid rgba(255,255,255,0.05)'
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            flexWrap: 'wrap',
+                            gap: '0.75rem'
                         }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <img src={user.avatar} alt={user.name} style={{ width: 48, height: 48, borderRadius: '50%', background: '#334155' }} />
-                                <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 auto', minWidth: '200px' }}>
+                                <img
+                                    src={user.avatar}
+                                    alt={user.name}
+                                    style={{
+                                        width: 48,
+                                        height: 48,
+                                        borderRadius: '50%',
+                                        background: '#334155',
+                                        flexShrink: 0
+                                    }}
+                                />
+                                <div style={{ minWidth: 0 }}>
                                     <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{user.name}</div>
                                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                         支払額: {Math.round(b.paid).toLocaleString()} 円
                                     </div>
                                 </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
+                            <div style={{ textAlign: 'right', flex: '0 0 auto' }}>
                                 {isSettled ? (
                                     <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>精算済み</span>
                                 ) : (
