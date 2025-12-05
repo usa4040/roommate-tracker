@@ -1,5 +1,6 @@
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Charts from './components/Charts';
@@ -7,9 +8,11 @@ import AddTransaction from './components/AddTransaction';
 import TransactionList from './components/TransactionList';
 import UserManagement from './components/UserManagement';
 import ConnectionStatus from './components/ConnectionStatus';
+import AuthPage from './components/AuthPage';
 import { useData } from './hooks/useData';
 
-function App() {
+function AppContent() {
+    const { isAuthenticated, loading: authLoading } = useAuth();
     const {
         users,
         transactions,
@@ -28,16 +31,41 @@ function App() {
         deletePayment
     } = useData();
 
+    // Show loading while checking authentication
+    if (authLoading) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <div className="animate-fade-in" style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
+                    読み込み中...
+                </div>
+            </div>
+        );
+    }
+
+    // Show auth page if not authenticated
+    if (!isAuthenticated) {
+        return <AuthPage />;
+    }
+
+    // Show loading while fetching data
     if (loading) {
         return (
             <Layout>
                 <div style={{ textAlign: 'center', padding: '4rem' }}>
-                    <div className="animate-fade-in" style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>読み込み中...</div>
+                    <div className="animate-fade-in" style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
+                        読み込み中...
+                    </div>
                 </div>
             </Layout>
         );
     }
 
+    // Show error if data fetch failed
     if (error) {
         return (
             <Layout>
@@ -105,6 +133,14 @@ function App() {
                 </div>
             </Layout>
         </>
+    );
+}
+
+function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     );
 }
 
