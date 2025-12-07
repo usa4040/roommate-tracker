@@ -82,7 +82,7 @@ class AuthAPI {
             method: 'POST',
             headers: this.getHeaders()
         });
-        localStorage.removeItem('auth_token');
+        // Token removal is handled by AuthContext
     }
 }
 

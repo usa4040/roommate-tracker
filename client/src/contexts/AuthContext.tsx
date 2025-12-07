@@ -59,8 +59,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     const logout = async () => {
-        await authAPI.logout();
-        setUser(null);
+        try {
+            await authAPI.logout();
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            // Always remove token and clear user state
+            localStorage.removeItem('auth_token');
+            setUser(null);
+        }
     };
 
     const value: AuthContextType = {
