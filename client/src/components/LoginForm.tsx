@@ -150,19 +150,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
                 </p>
             </div>
 
-            <div style={{
-                marginTop: '1rem',
-                padding: '0.75rem',
-                background: 'rgba(59, 130, 246, 0.1)',
-                border: '1px solid rgba(59, 130, 246, 0.3)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '0.85rem',
-                color: 'var(--text-secondary)'
-            }}>
-                <strong>デモアカウント:</strong><br />
-                Email: admin@example.com<br />
-                Password: admin123
-            </div>
+            {/* Show demo account info only in development */}
+            {import.meta.env.DEV && (
+                <div style={{
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    background: 'rgba(59, 130, 246, 0.1)',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '0.85rem',
+                    color: 'var(--text-secondary)'
+                }}>
+                    <strong>デモアカウント:</strong><br />
+                    Email: admin@example.com<br />
+                    Password: admin123
+                </div>
+            )}
         </div>
     );
 };

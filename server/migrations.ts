@@ -51,7 +51,9 @@ export const migrateAuthFields = async (): Promise<void> => {
 
                             console.log('Authentication fields added successfully');
 
-                            // Create a default admin user if no users have email
+                            // Create a default admin user only in development
+                            const isDevelopment = process.env.NODE_ENV !== 'production';
+
                             db.get("SELECT COUNT(*) as count FROM users WHERE email IS NOT NULL", [], async (err, row: any) => {
                                 if (err) {
                                     console.error('Error checking for admin user:', err);
@@ -59,8 +61,8 @@ export const migrateAuthFields = async (): Promise<void> => {
                                     return;
                                 }
 
-                                if (row.count === 0) {
-                                    console.log('Creating default admin user...');
+                                if (row.count === 0 && isDevelopment) {
+                                    console.log('Creating default admin user for development...');
                                     const defaultPassword = await hashPassword('admin123');
 
                                     db.run(
@@ -77,14 +79,18 @@ export const migrateAuthFields = async (): Promise<void> => {
                                                 console.error('Error creating admin user:', err);
                                                 reject(err);
                                             } else {
-                                                console.log('Default admin user created');
-                                                console.log('Email: admin@example.com');
-                                                console.log('Password: admin123');
-                                                console.log('⚠️  Please change the admin password after first login!');
+                                                console.log('✅ Default admin user created for development');
+                                                console.log('📧 Email: admin@example.com');
+                                                console.log('🔑 Password: admin123');
+                                                console.log('⚠️  This account is only for development!');
                                                 resolve();
                                             }
                                         }
                                     );
+                                } else if (row.count === 0 && !isDevelopment) {
+                                    console.log('⚠️  No admin user found in production.');
+                                    console.log('📝 Please create an admin user manually using the registration endpoint.');
+                                    resolve();
                                 } else {
                                     resolve();
                                 }
