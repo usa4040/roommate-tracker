@@ -64,10 +64,16 @@ npm run test:coverage
 
 ## 📚 ドキュメント
 
+### 開発者向け
 - **[API.md](API.md)** - RESTful API仕様とエンドポイント詳細
 - **[TESTING.md](TESTING.md)** - テスト戦略とテストの書き方
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - コントリビューションガイドライン
 - **[LICENSE](LICENSE)** - MITライセンス
+
+### 学習者向け 🎓
+- **[LEARNING_GUIDE.md](LEARNING_GUIDE.md)** - 包括的なプログラミング学習ガイド
+- **[QUICKSTART_LEARNING.md](QUICKSTART_LEARNING.md)** - 3週間で学ぶクイックスタートガイド
+- **[MY_LEARNING_LOG.md](MY_LEARNING_LOG.md)** - 学習記録テンプレート
 
 ## 🚀 技術スタック
 
