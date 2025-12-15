@@ -170,51 +170,75 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
 
             <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                 <div>
-                    <label>{transactionType === 'expense' ? '誰が支払いましたか？' : '支払った人'}</label>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        {users.map(u => (
-                            <div
-                                key={u.id}
-                                onClick={() => setFormData({ ...formData, payer_id: u.id.toString() })}
-                                style={{
-                                    flex: 1,
-                                    padding: '0.75rem',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: `1px solid ${formData.payer_id === u.id.toString() ? (transactionType === 'expense' ? 'var(--primary)' : 'var(--success)') : 'var(--glass-border)'}`,
-                                    background: formData.payer_id === u.id.toString() ? (transactionType === 'expense' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)') : 'rgba(255,255,255,0.05)',
-                                    cursor: 'pointer',
-                                    textAlign: 'center',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                <div style={{ fontWeight: 600 }}>{u.name}</div>
-                            </div>
-                        ))}
+                    <label id="payer-label">{transactionType === 'expense' ? '誰が支払いましたか？' : '支払った人'}</label>
+                    <div
+                        role="radiogroup"
+                        aria-labelledby="payer-label"
+                        style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}
+                    >
+                        {users.map(u => {
+                            const isSelected = formData.payer_id === u.id.toString();
+                            return (
+                                <button
+                                    type="button"
+                                    key={u.id}
+                                    role="radio"
+                                    aria-checked={isSelected}
+                                    onClick={() => setFormData({ ...formData, payer_id: u.id.toString() })}
+                                    style={{
+                                        flex: 1,
+                                        padding: '0.75rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: `1px solid ${isSelected ? (transactionType === 'expense' ? 'var(--primary)' : 'var(--success)') : 'var(--glass-border)'}`,
+                                        background: isSelected ? (transactionType === 'expense' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)') : 'rgba(255,255,255,0.05)',
+                                        cursor: 'pointer',
+                                        textAlign: 'center',
+                                        transition: 'all 0.2s ease',
+                                        color: 'inherit',
+                                        fontFamily: 'inherit'
+                                    }}
+                                >
+                                    <div style={{ fontWeight: 600 }}>{u.name}</div>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
                 {transactionType === 'payment' && (
                     <div>
-                        <label>受け取った人</label>
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                            {users.filter(u => u.id.toString() !== formData.payer_id).map(u => (
-                                <div
-                                    key={u.id}
-                                    onClick={() => setFormData({ ...formData, to_user_id: u.id.toString() })}
-                                    style={{
-                                        flex: 1,
-                                        padding: '0.75rem',
-                                        borderRadius: 'var(--radius-md)',
-                                        border: `1px solid ${formData.to_user_id === u.id.toString() ? 'var(--success)' : 'var(--glass-border)'}`,
-                                        background: formData.to_user_id === u.id.toString() ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.05)',
-                                        cursor: 'pointer',
-                                        textAlign: 'center',
-                                        transition: 'all 0.2s ease'
-                                    }}
-                                >
-                                    <div style={{ fontWeight: 600 }}>{u.name}</div>
-                                </div>
-                            ))}
+                        <label id="receiver-label">受け取った人</label>
+                        <div
+                            role="radiogroup"
+                            aria-labelledby="receiver-label"
+                            style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}
+                        >
+                            {users.filter(u => u.id.toString() !== formData.payer_id).map(u => {
+                                const isSelected = formData.to_user_id === u.id.toString();
+                                return (
+                                    <button
+                                        type="button"
+                                        key={u.id}
+                                        role="radio"
+                                        aria-checked={isSelected}
+                                        onClick={() => setFormData({ ...formData, to_user_id: u.id.toString() })}
+                                        style={{
+                                            flex: 1,
+                                            padding: '0.75rem',
+                                            borderRadius: 'var(--radius-md)',
+                                            border: `1px solid ${isSelected ? 'var(--success)' : 'var(--glass-border)'}`,
+                                            background: isSelected ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.05)',
+                                            cursor: 'pointer',
+                                            textAlign: 'center',
+                                            transition: 'all 0.2s ease',
+                                            color: 'inherit',
+                                            fontFamily: 'inherit'
+                                        }}
+                                    >
+                                        <div style={{ fontWeight: 600 }}>{u.name}</div>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

@@ -59,4 +59,28 @@ describe('AddTransaction Component', () => {
         expect(screen.getByText('支払った人')).toBeInTheDocument();
         expect(screen.getByText('受け取った人')).toBeInTheDocument();
     });
+
+    it('ユーザー選択がアクセシブルである', async () => {
+        const user = userEvent.setup();
+        render(
+            <AddTransaction
+                users={mockUsers}
+                onAddTransaction={mockAddTransaction}
+                onAddPayment={mockAddPayment}
+            />
+        );
+
+        // Click the expense button to open the form
+        const expenseButton = screen.getByText('経費を追加');
+        await user.click(expenseButton);
+
+        // ラジオグループとして認識されるか確認
+        const radioGroups = screen.getAllByRole('radiogroup');
+        expect(radioGroups.length).toBeGreaterThan(0);
+
+        // 各ユーザーがラジオボタンとして認識されるか確認
+        const radioButtons = screen.getAllByRole('radio');
+        expect(radioButtons.length).toBeGreaterThan(0);
+        expect(radioButtons[0]).toHaveAttribute('aria-checked', 'false');
+    });
 });
