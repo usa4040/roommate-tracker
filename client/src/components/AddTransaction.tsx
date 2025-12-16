@@ -171,11 +171,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
             <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                 <div>
                     <label>{transactionType === 'expense' ? '誰が支払いましたか？' : '支払った人'}</label>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }} role="group" aria-label="支払った人を選択">
                         {users.map(u => (
-                            <div
+                            <button
                                 key={u.id}
+                                type="button"
                                 onClick={() => setFormData({ ...formData, payer_id: u.id.toString() })}
+                                aria-pressed={formData.payer_id === u.id.toString()}
                                 style={{
                                     flex: 1,
                                     padding: '0.75rem',
@@ -184,11 +186,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                                     background: formData.payer_id === u.id.toString() ? (transactionType === 'expense' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)') : 'rgba(255,255,255,0.05)',
                                     cursor: 'pointer',
                                     textAlign: 'center',
-                                    transition: 'all 0.2s ease'
+                                    transition: 'all 0.2s ease',
+                                    color: 'inherit',
+                                    fontFamily: 'inherit'
                                 }}
                             >
                                 <div style={{ fontWeight: 600 }}>{u.name}</div>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -196,11 +200,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                 {transactionType === 'payment' && (
                     <div>
                         <label>受け取った人</label>
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }} role="group" aria-label="受け取った人を選択">
                             {users.filter(u => u.id.toString() !== formData.payer_id).map(u => (
-                                <div
+                                <button
                                     key={u.id}
+                                    type="button"
                                     onClick={() => setFormData({ ...formData, to_user_id: u.id.toString() })}
+                                    aria-pressed={formData.to_user_id === u.id.toString()}
                                     style={{
                                         flex: 1,
                                         padding: '0.75rem',
@@ -209,19 +215,22 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                                         background: formData.to_user_id === u.id.toString() ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.05)',
                                         cursor: 'pointer',
                                         textAlign: 'center',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
+                                        color: 'inherit',
+                                        fontFamily: 'inherit'
                                     }}
                                 >
                                     <div style={{ fontWeight: 600 }}>{u.name}</div>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     </div>
                 )}
 
                 <div>
-                    <label>金額 (円)</label>
+                    <label htmlFor="amount">金額 (円)</label>
                     <input
+                        id="amount"
                         type="number"
                         value={formData.amount}
                         onChange={e => setFormData({ ...formData, amount: e.target.value })}
@@ -232,8 +241,9 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                 </div>
 
                 <div>
-                    <label>内容{transactionType === 'payment' && '（任意）'}</label>
+                    <label htmlFor="description">内容{transactionType === 'payment' && '（任意）'}</label>
                     <input
+                        id="description"
                         type="text"
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -243,8 +253,9 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                 </div>
 
                 <div>
-                    <label>日付</label>
+                    <label htmlFor="date">日付</label>
                     <input
+                        id="date"
                         type="date"
                         value={formData.date}
                         onChange={e => setFormData({ ...formData, date: e.target.value })}
