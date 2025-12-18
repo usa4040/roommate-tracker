@@ -108,17 +108,17 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
     }
 
     return (
-        <div className="card animate-fade-in">
+        <div className="card animate-fade-in" role="dialog" aria-labelledby="dialog-title">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                 {transactionType === 'expense' ? (
                     <>
                         <Receipt size={24} style={{ color: 'var(--primary)' }} />
-                        <h3 style={{ margin: 0 }}>新しい経費</h3>
+                        <h3 id="dialog-title" style={{ margin: 0 }}>新しい経費</h3>
                     </>
                 ) : (
                     <>
                         <DollarSign size={24} style={{ color: 'var(--success)' }} />
-                        <h3 style={{ margin: 0 }}>返済を記録</h3>
+                        <h3 id="dialog-title" style={{ margin: 0 }}>返済を記録</h3>
                     </>
                 )}
             </div>
@@ -131,7 +131,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                 padding: '0.25rem',
                 background: 'rgba(255,255,255,0.05)',
                 borderRadius: 'var(--radius-md)'
-            }}>
+            }} role="group" aria-label="Transaction type">
                 <button
                     type="button"
                     onClick={() => setTransactionType('expense')}
@@ -173,9 +173,11 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                     <label>{transactionType === 'expense' ? '誰が支払いましたか？' : '支払った人'}</label>
                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                         {users.map(u => (
-                            <div
+                            <button
+                                type="button"
                                 key={u.id}
                                 onClick={() => setFormData({ ...formData, payer_id: u.id.toString() })}
+                                aria-pressed={formData.payer_id === u.id.toString()}
                                 style={{
                                     flex: 1,
                                     padding: '0.75rem',
@@ -184,11 +186,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                                     background: formData.payer_id === u.id.toString() ? (transactionType === 'expense' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)') : 'rgba(255,255,255,0.05)',
                                     cursor: 'pointer',
                                     textAlign: 'center',
-                                    transition: 'all 0.2s ease'
+                                    transition: 'all 0.2s ease',
+                                    color: 'inherit',
+                                    font: 'inherit'
                                 }}
                             >
                                 <div style={{ fontWeight: 600 }}>{u.name}</div>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -198,9 +202,11 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                         <label>受け取った人</label>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                             {users.filter(u => u.id.toString() !== formData.payer_id).map(u => (
-                                <div
+                                <button
+                                    type="button"
                                     key={u.id}
                                     onClick={() => setFormData({ ...formData, to_user_id: u.id.toString() })}
+                                    aria-pressed={formData.to_user_id === u.id.toString()}
                                     style={{
                                         flex: 1,
                                         padding: '0.75rem',
@@ -209,11 +215,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                                         background: formData.to_user_id === u.id.toString() ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.05)',
                                         cursor: 'pointer',
                                         textAlign: 'center',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
+                                        color: 'inherit',
+                                        font: 'inherit'
                                     }}
                                 >
                                     <div style={{ fontWeight: 600 }}>{u.name}</div>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     </div>
