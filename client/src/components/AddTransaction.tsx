@@ -29,9 +29,11 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
         description: '',
         date: new Date().toISOString().split('T')[0]
     });
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
+        setError(null);
 
         if (isSubmitting) return; // 送信中は処理しない
         setIsSubmitting(true);
@@ -39,7 +41,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
         try {
             let success = false;
             if (transactionType === 'expense') {
-                if (!formData.payer_id || !formData.amount || !formData.description) {
+                if (!formData.payer_id) {
+                    setError('支払った人を選択してください');
+                    setIsSubmitting(false);
+                    return;
+                }
+                if (!formData.amount || !formData.description) {
+                    setError('金額と内容を入力してください');
                     setIsSubmitting(false);
                     return;
                 }
@@ -50,7 +58,18 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                     date: formData.date
                 });
             } else {
-                if (!formData.payer_id || !formData.to_user_id || !formData.amount) {
+                if (!formData.payer_id) {
+                    setError('支払った人を選択してください');
+                    setIsSubmitting(false);
+                    return;
+                }
+                if (!formData.to_user_id) {
+                    setError('受け取った人を選択してください');
+                    setIsSubmitting(false);
+                    return;
+                }
+                if (!formData.amount) {
+                    setError('金額を入力してください');
                     setIsSubmitting(false);
                     return;
                 }
@@ -169,13 +188,30 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
+                {error && (
+                    <div style={{
+                        padding: '0.75rem',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                        borderRadius: 'var(--radius-md)',
+                        color: '#f87171',
+                        fontSize: '0.9rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                    }} role="alert">
+                        <span>⚠️</span> {error}
+                    </div>
+                )}
                 <div>
                     <label>{transactionType === 'expense' ? '誰が支払いましたか？' : '支払った人'}</label>
                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                         {users.map(u => (
-                            <div
+                            <button
+                                type="button"
                                 key={u.id}
                                 onClick={() => setFormData({ ...formData, payer_id: u.id.toString() })}
+                                aria-pressed={formData.payer_id === u.id.toString()}
                                 style={{
                                     flex: 1,
                                     padding: '0.75rem',
@@ -184,11 +220,14 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                                     background: formData.payer_id === u.id.toString() ? (transactionType === 'expense' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)') : 'rgba(255,255,255,0.05)',
                                     cursor: 'pointer',
                                     textAlign: 'center',
-                                    transition: 'all 0.2s ease'
+                                    transition: 'all 0.2s ease',
+                                    color: 'inherit',
+                                    fontFamily: 'inherit',
+                                    fontSize: 'inherit'
                                 }}
                             >
                                 <div style={{ fontWeight: 600 }}>{u.name}</div>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -198,9 +237,11 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                         <label>受け取った人</label>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                             {users.filter(u => u.id.toString() !== formData.payer_id).map(u => (
-                                <div
+                                <button
+                                    type="button"
                                     key={u.id}
                                     onClick={() => setFormData({ ...formData, to_user_id: u.id.toString() })}
+                                    aria-pressed={formData.to_user_id === u.id.toString()}
                                     style={{
                                         flex: 1,
                                         padding: '0.75rem',
@@ -209,11 +250,14 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                                         background: formData.to_user_id === u.id.toString() ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.05)',
                                         cursor: 'pointer',
                                         textAlign: 'center',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
+                                        color: 'inherit',
+                                        fontFamily: 'inherit',
+                                        fontSize: 'inherit'
                                     }}
                                 >
                                     <div style={{ fontWeight: 600 }}>{u.name}</div>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     </div>
