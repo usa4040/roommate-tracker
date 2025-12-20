@@ -263,6 +263,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             whiteSpace: 'nowrap'
                         }}
                         title="CSVでエクスポート"
+                        aria-label="CSVでエクスポート"
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(34, 197, 94, 0.2)';
                         }}
@@ -291,6 +292,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             whiteSpace: 'nowrap'
                         }}
                         title="JSONでエクスポート"
+                        aria-label="JSONでエクスポート"
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
                         }}
@@ -319,6 +321,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             whiteSpace: 'nowrap'
                         }}
                         title="サマリーをエクスポート"
+                        aria-label="サマリーをエクスポート"
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(168, 85, 247, 0.2)';
                         }}
@@ -425,6 +428,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                     color: 'var(--text-primary)'
                                 }}
                                 title={sortOrder === 'asc' ? '昇順' : '降順'}
+                                aria-label={sortOrder === 'asc' ? '昇順に並び替え' : '降順に並び替え'}
                             >
                                 {sortOrder === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
                             </button>
@@ -761,6 +765,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                     onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
                                     title="編集"
+                                    aria-label="編集"
                                 >
                                     <Edit2 size={16} />
                                 </button>
@@ -778,6 +783,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                     onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
                                     title="削除"
+                                    aria-label="削除"
                                 >
                                     <Trash2 size={18} />
                                 </button>
@@ -789,21 +795,26 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
             {/* Delete Confirmation Modal */}
             {deleteConfirmId && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000,
-                    backdropFilter: 'blur(4px)'
-                }}>
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="delete-modal-title"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        backdropFilter: 'blur(4px)'
+                    }}
+                >
                     <div className="card" style={{ width: '300px', padding: '1.5rem', margin: 0 }}>
-                        <h4 style={{ marginBottom: '1rem' }}>
+                        <h4 id="delete-modal-title" style={{ marginBottom: '1rem' }}>
                             {deleteType === 'payment' ? '返済' : '取引'}を削除しますか？
                         </h4>
                         <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>

@@ -1,0 +1,19 @@
+
+> roommate-tracker-root@1.0.0 dev
+> concurrently "npm run dev --prefix server" "npm run dev --prefix client"
+
+[0]
+[0] > server@1.0.0 dev
+[0] > nodemon --exec ts-node server.ts
+[0]
+[1]
+[1] > client@0.0.0 dev
+[1] > vite
+[1]
+[0] sh: 1: nodemon: not found
+[0] npm run dev --prefix server exited with code 127
+[1]
+[1]   VITE v7.2.4  ready in 295 ms
+[1]
+[1]   ➜  Local:   http://localhost:5173/
+[1]   ➜  Network: use --host to expose
