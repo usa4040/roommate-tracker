@@ -263,6 +263,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             whiteSpace: 'nowrap'
                         }}
                         title="CSVでエクスポート"
+                        aria-label="CSVでエクスポート"
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(34, 197, 94, 0.2)';
                         }}
@@ -291,6 +292,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             whiteSpace: 'nowrap'
                         }}
                         title="JSONでエクスポート"
+                        aria-label="JSONでエクスポート"
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
                         }}
@@ -319,6 +321,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             whiteSpace: 'nowrap'
                         }}
                         title="サマリーをエクスポート"
+                        aria-label="サマリーをエクスポート"
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(168, 85, 247, 0.2)';
                         }}
@@ -466,6 +469,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             <button
                                 key={preset.value}
                                 onClick={() => handleDatePreset(preset.value)}
+                                aria-pressed={datePreset === preset.value}
                                 style={{
                                     padding: '0.375rem 0.75rem',
                                     fontSize: '0.8rem',
@@ -761,6 +765,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                     onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
                                     title="編集"
+                                    aria-label="編集"
                                 >
                                     <Edit2 size={16} />
                                 </button>
@@ -778,6 +783,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                     onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
                                     title="削除"
+                                    aria-label="削除"
                                 >
                                     <Trash2 size={18} />
                                 </button>
