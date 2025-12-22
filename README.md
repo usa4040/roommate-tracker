@@ -3,7 +3,7 @@
 [![CI/CD Pipeline](https://github.com/usa4040/roommate-tracker/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/usa4040/roommate-tracker/actions/workflows/ci-cd.yml)
 [![Tests](https://img.shields.io/badge/tests-77%20passing-success)](https://github.com/usa4040/roommate-tracker)
 [![Coverage](https://img.shields.io/badge/coverage-61.81%25-yellow)](https://github.com/usa4040/roommate-tracker)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 
 ルームメイト間の経費と返済を管理するWebアプリケーションです。リアルタイム同期機能により、複数のユーザーが同時に利用できます。
 
@@ -60,20 +60,7 @@ npm test
 npm run test:coverage
 ```
 
-詳細については、[TESTING.md](TESTING.md) を参照してください。
 
-## 📚 ドキュメント
-
-### 開発者向け
-- **[API.md](API.md)** - RESTful API仕様とエンドポイント詳細
-- **[TESTING.md](TESTING.md)** - テスト戦略とテストの書き方
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - コントリビューションガイドライン
-- **[LICENSE](LICENSE)** - MITライセンス
-
-### 学習者向け 🎓
-- **[LEARNING_GUIDE.md](LEARNING_GUIDE.md)** - 包括的なプログラミング学習ガイド
-- **[QUICKSTART_LEARNING.md](QUICKSTART_LEARNING.md)** - 3週間で学ぶクイックスタートガイド
-- **[MY_LEARNING_LOG.md](MY_LEARNING_LOG.md)** - 学習記録テンプレート
 
 ## 🚀 技術スタック
 
@@ -212,10 +199,6 @@ git push origin feature/your-feature
 ## 🤝 コントリビューション
 
 プルリクエストを歓迎します！大きな変更の場合は、まずissueを開いて変更内容を議論してください。
-
-## 📄 ライセンス
-
-MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
 
 ## 👥 作者
 
