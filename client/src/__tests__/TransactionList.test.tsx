@@ -51,7 +51,7 @@ describe('TransactionList Component', () => {
         vi.clearAllMocks();
     });
 
-    it('最近の取引タイトルが表示される', () => {
+    it('エクスポートボタンが表示される', () => {
         render(
             <TransactionList
                 transactions={mockTransactions}
@@ -64,7 +64,9 @@ describe('TransactionList Component', () => {
             />
         );
 
-        expect(screen.getByText('最近の取引')).toBeInTheDocument();
+        expect(screen.getByText('CSV')).toBeInTheDocument();
+        expect(screen.getByText('JSON')).toBeInTheDocument();
+        expect(screen.getByText('サマリー')).toBeInTheDocument();
     });
 
     it('経費が正しく表示される', () => {

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X, Search, Filter, SortAsc, SortDesc, FileJson, FileSpreadsheet, BarChart3 } from 'lucide-react';
+import { Calendar, User, Trash2, ArrowRight, Receipt, Edit2, Check, X, Search, SortAsc, SortDesc, FileJson, FileSpreadsheet, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Transaction, Payment, TransactionOrPayment, TransactionInput, PaymentInput } from '../types';
 import { exportToCSV, exportToJSON, exportSummary, generateFilename } from '../utils/export';
 
@@ -43,6 +43,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
     const [datePreset, setDatePreset] = useState<string>('all');
+
+    // Filter expansion state
+    const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(false);
 
     // Date preset handler
     const handleDatePreset = (preset: string) => {
@@ -234,206 +237,217 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
     return (
         <div className="card animate-fade-in">
+            {/* Export Buttons Row */}
             <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
+                justifyContent: 'flex-end',
                 alignItems: 'center',
-                marginBottom: '1rem',
-                flexWrap: 'wrap',
-                gap: '0.75rem'
+                marginBottom: '0.75rem',
+                gap: '0.5rem'
             }}>
-                <h3 style={{ margin: 0 }}>最近の取引</h3>
+                <button
+                    onClick={handleExportCSV}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.4rem 0.6rem',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: 'var(--radius-sm)',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap'
+                    }}
+                    title="CSVでエクスポート"
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                    }}
+                >
+                    <FileSpreadsheet size={12} />
+                    CSV
+                </button>
 
-                {/* Export buttons */}
-                <div className="flex-wrap-mobile" style={{ gap: '0.5rem' }}>
-                    <button
-                        onClick={handleExportCSV}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                            padding: '0.5rem 0.75rem',
-                            background: 'rgba(34, 197, 94, 0.1)',
-                            border: '1px solid rgba(34, 197, 94, 0.3)',
-                            borderRadius: 'var(--radius-sm)',
-                            color: 'var(--success)',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            transition: 'all 0.2s',
-                            whiteSpace: 'nowrap'
-                        }}
-                        title="CSVでエクスポート"
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(34, 197, 94, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(34, 197, 94, 0.1)';
-                        }}
-                    >
-                        <FileSpreadsheet size={16} />
-                        <span className="hide-on-mobile">CSV</span>
-                    </button>
+                <button
+                    onClick={handleExportJSON}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.4rem 0.6rem',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: 'var(--radius-sm)',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap'
+                    }}
+                    title="JSONでエクスポート"
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                    }}
+                >
+                    <FileJson size={12} />
+                    JSON
+                </button>
 
-                    <button
-                        onClick={handleExportJSON}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                            padding: '0.5rem 0.75rem',
-                            background: 'rgba(59, 130, 246, 0.1)',
-                            border: '1px solid rgba(59, 130, 246, 0.3)',
-                            borderRadius: 'var(--radius-sm)',
-                            color: 'var(--primary)',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            transition: 'all 0.2s',
-                            whiteSpace: 'nowrap'
-                        }}
-                        title="JSONでエクスポート"
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-                        }}
-                    >
-                        <FileJson size={16} />
-                        <span className="hide-on-mobile">JSON</span>
-                    </button>
-
-                    <button
-                        onClick={handleExportSummary}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                            padding: '0.5rem 0.75rem',
-                            background: 'rgba(168, 85, 247, 0.1)',
-                            border: '1px solid rgba(168, 85, 247, 0.3)',
-                            borderRadius: 'var(--radius-sm)',
-                            color: '#a855f7',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            transition: 'all 0.2s',
-                            whiteSpace: 'nowrap'
-                        }}
-                        title="サマリーをエクスポート"
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(168, 85, 247, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(168, 85, 247, 0.1)';
-                        }}
-                    >
-                        <BarChart3 size={16} />
-                        <span className="hide-on-mobile">サマリー</span>
-                    </button>
-                </div>
+                <button
+                    onClick={handleExportSummary}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.4rem 0.6rem',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: 'var(--radius-sm)',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap'
+                    }}
+                    title="サマリーをエクスポート"
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                    }}
+                >
+                    <BarChart3 size={12} />
+                    サマリー
+                </button>
             </div>
 
-            {/* Filter and Search UI */}
+            {/* Search Row: Search bar + Type/User dropdowns + Filter expand button */}
             <div style={{
-                display: 'grid',
-                gap: '0.75rem',
-                marginBottom: '1rem',
-                padding: '1rem',
-                background: 'rgba(255,255,255,0.02)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid rgba(255,255,255,0.05)'
+                display: 'flex',
+                gap: '0.5rem',
+                marginBottom: '0.75rem',
+                alignItems: 'center'
             }}>
                 {/* Search */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Search size={18} style={{ color: 'var(--text-secondary)' }} />
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    flex: '1 1 150px',
+                    minWidth: '120px',
+                    padding: '0.4rem 0.6rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 'var(--radius-sm)'
+                }}>
+                    <Search size={14} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
                     <input
                         type="text"
-                        placeholder="内容で検索..."
+                        placeholder="検索..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         style={{
                             flex: 1,
-                            padding: '0.5rem',
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: 'var(--radius-sm)',
+                            minWidth: '50px',
+                            padding: '0.2rem',
+                            background: 'transparent',
+                            border: 'none',
                             color: 'var(--text-primary)',
-                            fontSize: '0.9rem'
+                            fontSize: '0.85rem',
+                            outline: 'none'
                         }}
                     />
                 </div>
 
-                {/* Filters */}
-                <div className="grid-3-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
-                    {/* Type Filter */}
-                    <div>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
-                            <Filter size={14} />
-                            種類
-                        </label>
-                        <select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value as 'all' | 'transaction' | 'payment')}
-                            style={{ width: '100%', padding: '0.5rem', fontSize: '0.85rem' }}
-                        >
-                            <option value="all">全て</option>
-                            <option value="transaction">経費のみ</option>
-                            <option value="payment">返済のみ</option>
-                        </select>
-                    </div>
+                {/* Type Filter */}
+                <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value as 'all' | 'transaction' | 'payment')}
+                    style={{
+                        padding: '0.4rem 0.5rem',
+                        fontSize: '0.8rem',
+                        background: '#1e293b',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 'var(--radius-sm)',
+                        color: 'var(--text-primary)',
+                        flexShrink: 0,
+                        width: 'auto',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <option value="all" style={{ background: '#1e293b', color: '#f8fafc' }}>種類 ▼</option>
+                    <option value="transaction" style={{ background: '#1e293b', color: '#f8fafc' }}>経費</option>
+                    <option value="payment" style={{ background: '#1e293b', color: '#f8fafc' }}>返済</option>
+                </select>
 
-                    {/* User Filter */}
-                    <div>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
-                            <User size={14} />
-                            ユーザー
-                        </label>
-                        <select
-                            value={filterUser}
-                            onChange={(e) => setFilterUser(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
-                            style={{ width: '100%', padding: '0.5rem', fontSize: '0.85rem' }}
-                        >
-                            <option value="all">全員</option>
-                            {users.map(user => (
-                                <option key={user.id} value={user.id}>{user.name}</option>
-                            ))}
-                        </select>
-                    </div>
+                {/* User Filter */}
+                <select
+                    value={filterUser}
+                    onChange={(e) => setFilterUser(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+                    style={{
+                        padding: '0.4rem 0.5rem',
+                        fontSize: '0.8rem',
+                        background: '#1e293b',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 'var(--radius-sm)',
+                        color: 'var(--text-primary)',
+                        flexShrink: 0,
+                        width: 'auto',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <option value="all" style={{ background: '#1e293b', color: '#f8fafc' }}>ユーザー ▼</option>
+                    {users.map(user => (
+                        <option key={user.id} value={user.id} style={{ background: '#1e293b', color: '#f8fafc' }}>{user.name}</option>
+                    ))}
+                </select>
 
-                    {/* Sort */}
-                    <div>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
-                            {sortOrder === 'asc' ? <SortAsc size={14} /> : <SortDesc size={14} />}
-                            並び替え
-                        </label>
-                        <div style={{ display: 'flex', gap: '0.25rem' }}>
-                            <select
-                                value={sortField}
-                                onChange={(e) => setSortField(e.target.value as SortField)}
-                                style={{ flex: 1, padding: '0.5rem', fontSize: '0.85rem' }}
-                            >
-                                <option value="date">日付</option>
-                                <option value="amount">金額</option>
-                            </select>
-                            <button
-                                onClick={toggleSortOrder}
-                                style={{
-                                    padding: '0.5rem',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: 'var(--radius-sm)',
-                                    cursor: 'pointer',
-                                    color: 'var(--text-primary)'
-                                }}
-                                title={sortOrder === 'asc' ? '昇順' : '降順'}
-                            >
-                                {sortOrder === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                {/* Spacer */}
+                <div style={{ flex: '1 1 auto', minWidth: '0' }}></div>
 
-                {/* Date Range Filter */}
-                <div>
+                {/* Expand/Collapse Filter Button */}
+                <button
+                    onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.4rem 0.6rem',
+                        background: isFilterExpanded ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255,255,255,0.03)',
+                        border: isFilterExpanded ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 'var(--radius-sm)',
+                        color: isFilterExpanded ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        transition: 'all 0.2s',
+                        flexShrink: 0,
+                        whiteSpace: 'nowrap'
+                    }}
+                >
+                    {isFilterExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    フィルター展開
+                </button>
+            </div>
+
+            {/* Expandable Date Range Filter */}
+            {isFilterExpanded && (
+                <div style={{
+                    marginBottom: '0.75rem',
+                    padding: '1rem',
+                    background: 'rgba(255,255,255,0.02)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    animation: 'fadeIn 0.2s ease'
+                }}>
                     <label style={{
                         fontSize: '0.75rem',
                         color: 'var(--text-secondary)',
@@ -556,13 +570,61 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             />
                         </div>
                     </div>
-                </div>
 
-                {/* Results count */}
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-                    {filteredAndSortedItems.length} 件の取引
+                    {/* Sort Options */}
+                    <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        <label style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--text-secondary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            marginBottom: '0.5rem',
+                            fontWeight: 600
+                        }}>
+                            <SortAsc size={14} /> 並び替え
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <select
+                                value={sortField}
+                                onChange={(e) => setSortField(e.target.value as SortField)}
+                                style={{
+                                    padding: '0.5rem 0.75rem',
+                                    fontSize: '0.85rem',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    color: 'var(--text-primary)'
+                                }}
+                            >
+                                <option value="date">日付</option>
+                                <option value="amount">金額</option>
+                            </select>
+                            <button
+                                onClick={toggleSortOrder}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    padding: '0.5rem 0.75rem',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    cursor: 'pointer',
+                                    color: 'var(--text-primary)',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                {sortOrder === 'asc' ? <SortAsc size={14} /> : <SortDesc size={14} />}
+                                {sortOrder === 'asc' ? '昇順' : '降順'}
+                            </button>
+                            <div style={{ marginLeft: 'auto', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                {filteredAndSortedItems.length} 件の取引
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )}
 
             <div style={{ display: 'grid', gap: '0.75rem' }}>
                 {filteredAndSortedItems.length === 0 && (
