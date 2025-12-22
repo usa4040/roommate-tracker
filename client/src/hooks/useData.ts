@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { ZodError } from 'zod';
 import socket from '../socket';
 import { transactionInputSchema, paymentInputSchema, userInputSchema } from '../schemas';
+import { ENDPOINTS, buildApiUrl } from '../api/config';
 import type {
     User,
     Transaction,
@@ -13,8 +14,6 @@ import type {
     ApiResponse,
     UseDataReturn
 } from '../types';
-
-const API_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export const useData = (): UseDataReturn => {
     const [users, setUsers] = useState<User[]>([]);
@@ -28,10 +27,10 @@ export const useData = (): UseDataReturn => {
         try {
             setLoading(true);
             const [usersRes, transRes, paymentsRes, balRes] = await Promise.all([
-                fetch(`${API_URL}/users`),
-                fetch(`${API_URL}/transactions`),
-                fetch(`${API_URL}/payments`),
-                fetch(`${API_URL}/balance`)
+                fetch(buildApiUrl(ENDPOINTS.USERS)),
+                fetch(buildApiUrl(ENDPOINTS.TRANSACTIONS)),
+                fetch(buildApiUrl(ENDPOINTS.PAYMENTS)),
+                fetch(buildApiUrl(ENDPOINTS.BALANCE))
             ]);
 
             const usersData: ApiResponse<User[]> = await usersRes.json();
@@ -62,7 +61,7 @@ export const useData = (): UseDataReturn => {
             // Validate input before sending
             const validated = transactionInputSchema.parse(transaction);
 
-            const res = await fetch(`${API_URL}/transactions`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.TRANSACTIONS), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,7 +105,7 @@ export const useData = (): UseDataReturn => {
             // Validate input before sending
             const validated = userInputSchema.parse({ name });
 
-            const res = await fetch(`${API_URL}/users`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.USERS), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -146,7 +145,7 @@ export const useData = (): UseDataReturn => {
     const updateUser = async (id: number, name: string): Promise<boolean> => {
         const toastId = toast.loading('ユーザー名を更新中...');
         try {
-            const res = await fetch(`${API_URL}/users/${id}`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.USER_BY_ID(id)), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -169,7 +168,7 @@ export const useData = (): UseDataReturn => {
     const deleteUser = async (id: number): Promise<boolean> => {
         const toastId = toast.loading('ユーザーを削除中...');
         try {
-            const res = await fetch(`${API_URL}/users/${id}`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.USER_BY_ID(id)), {
                 method: 'DELETE',
             });
             const data: ApiResponse<void> = await res.json();
@@ -188,7 +187,7 @@ export const useData = (): UseDataReturn => {
     const deleteTransaction = async (id: number): Promise<boolean> => {
         const toastId = toast.loading('取引を削除中...');
         try {
-            const res = await fetch(`${API_URL}/transactions/${id}`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.TRANSACTION_BY_ID(id)), {
                 method: 'DELETE',
             });
             const data: ApiResponse<void> = await res.json();
@@ -210,7 +209,7 @@ export const useData = (): UseDataReturn => {
             // Validate input before sending
             const validated = transactionInputSchema.parse(transaction);
 
-            const res = await fetch(`${API_URL}/transactions/${id}`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.TRANSACTION_BY_ID(id)), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -247,7 +246,7 @@ export const useData = (): UseDataReturn => {
             // Validate input before sending
             const validated = paymentInputSchema.parse(payment);
 
-            const res = await fetch(`${API_URL}/payments`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.PAYMENTS), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -285,7 +284,7 @@ export const useData = (): UseDataReturn => {
     const deletePayment = async (id: number): Promise<boolean> => {
         const toastId = toast.loading('返済を削除中...');
         try {
-            const res = await fetch(`${API_URL}/payments/${id}`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.PAYMENT_BY_ID(id)), {
                 method: 'DELETE',
             });
             const data: ApiResponse<void> = await res.json();
@@ -307,7 +306,7 @@ export const useData = (): UseDataReturn => {
             // Validate input before sending
             const validated = paymentInputSchema.parse(payment);
 
-            const res = await fetch(`${API_URL}/payments/${id}`, {
+            const res = await fetch(buildApiUrl(ENDPOINTS.PAYMENT_BY_ID(id)), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { ENDPOINTS, buildApiUrl } from './config';
 
 export interface LoginCredentials {
     email: string;
@@ -35,7 +35,7 @@ class AuthAPI {
     }
 
     async login(credentials: LoginCredentials): Promise<AuthResponse> {
-        const response = await fetch(`${API_URL}/api/auth/login`, {
+        const response = await fetch(buildApiUrl(ENDPOINTS.AUTH.LOGIN), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credentials)
@@ -50,7 +50,7 @@ class AuthAPI {
     }
 
     async register(data: RegisterData): Promise<AuthResponse> {
-        const response = await fetch(`${API_URL}/api/auth/register`, {
+        const response = await fetch(buildApiUrl(ENDPOINTS.AUTH.REGISTER), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -65,7 +65,7 @@ class AuthAPI {
     }
 
     async getCurrentUser(): Promise<AuthUser> {
-        const response = await fetch(`${API_URL}/api/auth/me`, {
+        const response = await fetch(buildApiUrl(ENDPOINTS.AUTH.ME), {
             headers: this.getHeaders()
         });
 
@@ -78,7 +78,7 @@ class AuthAPI {
     }
 
     async logout(): Promise<void> {
-        await fetch(`${API_URL}/api/auth/logout`, {
+        await fetch(buildApiUrl(ENDPOINTS.AUTH.LOGOUT), {
             method: 'POST',
             headers: this.getHeaders()
         });
@@ -87,3 +87,4 @@ class AuthAPI {
 }
 
 export const authAPI = new AuthAPI();
+
