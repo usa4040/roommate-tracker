@@ -1,8 +1,6 @@
 # ルームメイト支払い管理アプリ
 
 [![CI/CD Pipeline](https://github.com/usa4040/roommate-tracker/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/usa4040/roommate-tracker/actions/workflows/ci-cd.yml)
-[![Tests](https://img.shields.io/badge/tests-77%20passing-success)](https://github.com/usa4040/roommate-tracker)
-[![Coverage](https://img.shields.io/badge/coverage-61.81%25-yellow)](https://github.com/usa4040/roommate-tracker)
 
 
 ルームメイト間の経費と返済を管理するWebアプリケーションです。リアルタイム同期機能により、複数のユーザーが同時に利用できます。
@@ -33,17 +31,6 @@
   - コンポーネントテスト: 33 tests (UI コンポーネント)
 - **合計**: **77 passing tests** ✅
 
-### カバレッジ
-
-| カテゴリ | カバレッジ | 評価 |
-|---------|-----------|------|
-| **全体** | 61.81% | 良好 |
-| schemas.ts | 100% | 完璧 ✅ |
-| Layout.tsx | 100% | 完璧 ✅ |
-| Dashboard.tsx | 90.9% | 優秀 ✅ |
-| UserManagement.tsx | 71.79% | 良好 ✅ |
-| TransactionList.tsx | 66.66% | 良好 |
-| AddTransaction.tsx | 32.55% | 改善の余地 |
 
 ### テストの実行
 
