@@ -80,14 +80,27 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
 
     if (!isOpen) {
         return (
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{
+                display: 'flex',
+                gap: '1rem',
+                marginTop: '1rem',
+                marginBottom: '1.5rem',
+                padding: '0.5rem',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: 'var(--radius-lg)'
+            }}>
                 <button
                     className="btn"
                     onClick={() => {
                         setTransactionType('expense');
                         setIsOpen(true);
                     }}
-                    style={{ flex: 1, justifyContent: 'center' }}
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        padding: '1rem 1.5rem',
+                        fontSize: '1rem'
+                    }}
                 >
                     <Receipt size={20} />
                     経費を追加
@@ -98,7 +111,12 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ users, onAddTransaction
                         setTransactionType('payment');
                         setIsOpen(true);
                     }}
-                    style={{ flex: 1, justifyContent: 'center' }}
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        padding: '1rem 1.5rem',
+                        fontSize: '1rem'
+                    }}
                 >
                     <DollarSign size={20} />
                     返済を記録
