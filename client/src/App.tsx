@@ -1,15 +1,19 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Layout from './components/Layout';
-import Dashboard from './components/Dashboard';
-import Charts from './components/Charts';
-import AddTransaction from './components/AddTransaction';
-import TransactionList from './components/TransactionList';
-import UserManagement from './components/UserManagement';
+import Sidebar from './components/Sidebar';
 import ConnectionStatus from './components/ConnectionStatus';
 import AuthPage from './components/AuthPage';
+import {
+    DashboardPage,
+    TransactionsPage,
+    AddPage,
+    MembersPage,
+    AnalyticsPage
+} from './pages';
 import { useData } from './hooks/useData';
+import './components/Sidebar.css';
 
 function AppContent() {
     const { isAuthenticated, loading: authLoading } = useAuth();
@@ -55,24 +59,31 @@ function AppContent() {
     // Show loading while fetching data
     if (loading) {
         return (
-            <Layout>
-                <div style={{ textAlign: 'center', padding: '4rem' }}>
-                    <div className="animate-fade-in" style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
-                        読み込み中...
-                    </div>
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <div className="animate-fade-in" style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
+                    読み込み中...
                 </div>
-            </Layout>
+            </div>
         );
     }
 
     // Show error if data fetch failed
     if (error) {
         return (
-            <Layout>
-                <div style={{ textAlign: 'center', padding: '4rem', color: '#f87171' }}>
-                    エラー: {error}
-                </div>
-            </Layout>
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#f87171'
+            }}>
+                エラー: {error}
+            </div>
         );
     }
 
@@ -102,45 +113,72 @@ function AppContent() {
                 }}
             />
             <ConnectionStatus />
-            <Layout>
-                <Dashboard balance={balance} users={users} />
-                <Charts
-                    transactions={transactions}
-                    payments={payments}
-                    users={users}
-                />
-                <div style={{ marginTop: '2rem' }}>
-                    <UserManagement
-                        users={users}
-                        onAddUser={addUser}
-                        onUpdateUser={updateUser}
-                        onDeleteUser={deleteUser}
+            <Sidebar />
+            <main className="main-content">
+                <Routes>
+                    <Route
+                        path="/"
+                        element={<DashboardPage balance={balance} users={users} />}
                     />
-                    <AddTransaction
-                        users={users}
-                        onAddTransaction={addTransaction}
-                        onAddPayment={addPayment}
+                    <Route
+                        path="/transactions"
+                        element={
+                            <TransactionsPage
+                                transactions={transactions}
+                                payments={payments}
+                                users={users}
+                                onDeleteTransaction={deleteTransaction}
+                                onDeletePayment={deletePayment}
+                                onUpdateTransaction={updateTransaction}
+                                onUpdatePayment={updatePayment}
+                            />
+                        }
                     />
-                    <TransactionList
-                        transactions={transactions}
-                        payments={payments}
-                        users={users}
-                        onDeleteTransaction={deleteTransaction}
-                        onDeletePayment={deletePayment}
-                        onUpdateTransaction={updateTransaction}
-                        onUpdatePayment={updatePayment}
+                    <Route
+                        path="/add"
+                        element={
+                            <AddPage
+                                users={users}
+                                onAddTransaction={addTransaction}
+                                onAddPayment={addPayment}
+                            />
+                        }
                     />
-                </div>
-            </Layout>
+                    <Route
+                        path="/members"
+                        element={
+                            <MembersPage
+                                users={users}
+                                onAddUser={addUser}
+                                onUpdateUser={updateUser}
+                                onDeleteUser={deleteUser}
+                            />
+                        }
+                    />
+                    <Route
+                        path="/analytics"
+                        element={
+                            <AnalyticsPage
+                                transactions={transactions}
+                                payments={payments}
+                                users={users}
+                            />
+                        }
+                    />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </main>
         </>
     );
 }
 
 function App() {
     return (
-        <AuthProvider>
-            <AppContent />
-        </AuthProvider>
+        <BrowserRouter>
+            <AuthProvider>
+                <AppContent />
+            </AuthProvider>
+        </BrowserRouter>
     );
 }
 
