@@ -8,7 +8,7 @@ import type { TransactionOrPayment, Transaction, Payment } from '../../types';
 
 // グローバルオブジェクトをモック
 const mockAlert = vi.fn();
-const mockCreateObjectURL = vi.fn(() => 'blob:mock-url');
+const mockCreateObjectURL = vi.fn((_blob: Blob) => 'blob:mock-url');
 const mockRevokeObjectURL = vi.fn();
 const mockRequestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
     cb(0);
@@ -95,7 +95,9 @@ describe('Export Utilities', () => {
             expect(mockCreateElement).toHaveBeenCalledWith('a');
 
             // Blobの内容を検証
-            const blobCall = mockCreateObjectURL.mock.calls[0][0] as Blob;
+            const calls = mockCreateObjectURL.mock.calls;
+            expect(calls.length).toBeGreaterThan(0);
+            const blobCall = calls[0]?.[0] as unknown as Blob;
             expect(blobCall).toBeInstanceOf(Blob);
             expect(blobCall.type).toBe('text/csv;charset=utf-8;');
         });
@@ -138,7 +140,9 @@ describe('Export Utilities', () => {
 
             expect(mockCreateObjectURL).toHaveBeenCalled();
 
-            const blobCall = mockCreateObjectURL.mock.calls[0][0] as Blob;
+            const calls = mockCreateObjectURL.mock.calls;
+            expect(calls.length).toBeGreaterThan(0);
+            const blobCall = calls[0]?.[0] as unknown as Blob;
             expect(blobCall.type).toBe('application/json;charset=utf-8;');
         });
 
@@ -183,7 +187,9 @@ describe('Export Utilities', () => {
 
             expect(mockCreateObjectURL).toHaveBeenCalled();
 
-            const blobCall = mockCreateObjectURL.mock.calls[0][0] as Blob;
+            const calls = mockCreateObjectURL.mock.calls;
+            expect(calls.length).toBeGreaterThan(0);
+            const blobCall = calls[0]?.[0] as unknown as Blob;
             expect(blobCall.type).toBe('application/json;charset=utf-8;');
         });
 
