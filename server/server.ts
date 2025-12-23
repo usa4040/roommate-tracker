@@ -543,7 +543,7 @@ app.get('/api/balance', (_req: Request, res: Response) => {
 
                     // Add transaction amounts
                     balanceRows.forEach(row => {
-                        balances[row.user_id] = row.total_paid;
+                        balances[row.payer_id] = row.total_paid;
                     });
 
                     // Adjust for payments

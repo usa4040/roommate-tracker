@@ -91,6 +91,6 @@ export interface PaymentRow {
 }
 
 export interface BalanceRow {
-    user_id: number;
+    payer_id: number;
     total_paid: number;
 }
