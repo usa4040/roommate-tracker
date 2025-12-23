@@ -25,9 +25,9 @@ const Dashboard: React.FC<DashboardProps> = ({ balance, users }) => {
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             padding: '1rem',
-                            background: 'rgba(255,255,255,0.05)',
+                            background: 'var(--bg-surface)',
                             borderRadius: 'var(--radius-md)',
-                            border: '1px solid rgba(255,255,255,0.05)',
+                            border: '1px solid var(--border-dim)',
                             flexWrap: 'wrap',
                             gap: '0.75rem'
                         }}>

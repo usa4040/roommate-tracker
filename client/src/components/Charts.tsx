@@ -94,13 +94,14 @@ const Charts: React.FC<ChartsProps> = ({ transactions, payments, users }) => {
         if (active && payload && payload.length) {
             return (
                 <div style={{
-                    background: 'rgba(30, 41, 59, 0.95)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'var(--tooltip-bg)',
+                    border: '1px solid var(--tooltip-border)',
                     borderRadius: '8px',
                     padding: '0.75rem',
-                    backdropFilter: 'blur(8px)'
+                    backdropFilter: 'blur(8px)',
+                    color: 'var(--tooltip-text)'
                 }}>
-                    <p style={{ margin: 0, marginBottom: '0.5rem', fontWeight: 600 }}>{label}</p>
+                    <p style={{ margin: 0, marginBottom: '0.5rem', fontWeight: 600, color: 'var(--tooltip-text)' }}>{label}</p>
                     {payload.map((entry: any, index: number) => (
                         <p key={index} style={{ margin: 0, color: entry.color, fontSize: '0.9rem' }}>
                             {entry.name}: {entry.value.toLocaleString()}円
@@ -145,7 +146,7 @@ const Charts: React.FC<ChartsProps> = ({ transactions, payments, users }) => {
                         </h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={monthlyData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--grid-line)" />
                                 <XAxis
                                     dataKey="month"
                                     stroke="var(--text-secondary)"
@@ -226,7 +227,7 @@ const Charts: React.FC<ChartsProps> = ({ transactions, payments, users }) => {
                         </h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={userBalanceData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--grid-line)" />
                                 <XAxis
                                     dataKey="name"
                                     stroke="var(--text-secondary)"

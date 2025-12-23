@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Sidebar from './components/Sidebar';
 import ConnectionStatus from './components/ConnectionStatus';
 import AuthPage from './components/AuthPage';
@@ -93,9 +94,9 @@ function AppContent() {
                 toastOptions={{
                     duration: 4000,
                     style: {
-                        background: '#1f2937',
-                        color: '#f9fafb',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--border-color)',
                     },
                     success: {
                         iconTheme: {
@@ -175,7 +176,9 @@ function App() {
     return (
         <BrowserRouter>
             <AuthProvider>
-                <AppContent />
+                <ThemeProvider>
+                    <AppContent />
+                </ThemeProvider>
             </AuthProvider>
         </BrowserRouter>
     );
