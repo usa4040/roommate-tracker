@@ -9,9 +9,12 @@ import {
     BarChart3,
     LogOut,
     Menu,
-    X
+    X,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import './Sidebar.css';
 
 interface NavItem {
@@ -31,6 +34,7 @@ const navItems: NavItem[] = [
 const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
 
     const handleLogout = async () => {
         if (confirm('ログアウトしますか？')) {
@@ -101,6 +105,10 @@ const Sidebar: React.FC = () => {
                                     </p>
                                 </div>
                             </div>
+                            <button className="sidebar-theme-toggle" onClick={toggleTheme}>
+                                {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+                                <span>{theme === 'light' ? 'ダークモード' : 'ライトモード'}</span>
+                            </button>
                             <button className="sidebar-logout" onClick={handleLogout}>
                                 <LogOut size={16} />
                                 <span>ログアウト</span>

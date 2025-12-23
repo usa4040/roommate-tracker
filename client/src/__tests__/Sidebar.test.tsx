@@ -26,6 +26,17 @@ vi.mock('../contexts/AuthContext', () => ({
     })
 }));
 
+// ThemeContext のモック
+const mockToggleTheme = vi.fn();
+const mockTheme = 'dark';
+
+vi.mock('../contexts/ThemeContext', () => ({
+    useTheme: () => ({
+        theme: mockTheme,
+        toggleTheme: mockToggleTheme
+    })
+}));
+
 // window.confirm のモック
 const mockConfirm = vi.fn(() => true);
 global.confirm = mockConfirm;
@@ -89,6 +100,22 @@ describe('Sidebar Component', () => {
         renderWithRouter(<Sidebar />);
 
         expect(screen.getByText('ログアウト')).toBeInTheDocument();
+    });
+
+    it('テーマ切り替えボタンが表示される', () => {
+        renderWithRouter(<Sidebar />);
+
+        expect(screen.getByText('ライトモード')).toBeInTheDocument();
+    });
+
+    it('テーマ切り替えボタンをクリックするとtoggleThemeが呼ばれる', async () => {
+        const user = userEvent.setup();
+        renderWithRouter(<Sidebar />);
+
+        const toggleBtn = screen.getByText('ライトモード').closest('button');
+        await user.click(toggleBtn!);
+
+        expect(mockToggleTheme).toHaveBeenCalled();
     });
 
     it('ログアウトボタンをクリックすると確認ダイアログが表示される', async () => {

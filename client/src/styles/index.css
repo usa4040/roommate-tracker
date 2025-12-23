@@ -1,4 +1,5 @@
 :root {
+  /* Default Dark Mode Variables */
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --accent-primary: #8b5cf6;
@@ -13,11 +14,54 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 
+  --border-color: rgba(255, 255, 255, 0.1);
+
+  /* Semantic Variables */
+  --bg-surface: rgba(255, 255, 255, 0.05);
+  --bg-surface-hover: rgba(255, 255, 255, 0.08);
+  --border-dim: rgba(255, 255, 255, 0.05);
+  --input-bg: rgba(15, 23, 42, 0.6);
+
+  --blob-1: rgba(139, 92, 246, 0.15);
+  --blob-2: rgba(236, 72, 153, 0.15);
+
+  --success: #4ade80;
+  --primary: #8b5cf6;
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --accent-primary: #7c3aed;
+  --accent-secondary: #db2777;
+  --accent-gradient: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-accent: #7c3aed;
+
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+
+  --border-color: #e2e8f0;
+
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f5f9;
+  --border-dim: #e2e8f0;
+  --input-bg: #ffffff;
+
+  --blob-1: rgba(124, 58, 237, 0.1);
+  --blob-2: rgba(219, 39, 119, 0.1);
+
+  --success: #16a34a;
+  --primary: #7c3aed;
 }
 
 * {
@@ -33,8 +77,8 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 20%);
+    radial-gradient(circle at 10% 20%, var(--blob-1) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, var(--blob-2) 0%, transparent 20%);
 }
 
 #root {
@@ -117,14 +161,14 @@ h1 {
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface-hover);
   color: var(--text-primary);
 }
 
 /* Form Elements */
 input,
 select {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--input-bg);
   border: 1px solid var(--glass-border);
   color: var(--text-primary);
   padding: 0.75rem 1rem;

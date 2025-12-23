@@ -252,8 +252,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         alignItems: 'center',
                         gap: '0.25rem',
                         padding: '0.4rem 0.6rem',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.15)',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--border-dim)',
                         borderRadius: 'var(--radius-sm)',
                         color: 'var(--text-primary)',
                         cursor: 'pointer',
@@ -263,10 +263,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     }}
                     title="CSVでエクスポート"
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                        e.currentTarget.style.background = 'var(--bg-surface-hover)';
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                        e.currentTarget.style.background = 'var(--bg-surface)';
                     }}
                 >
                     <FileSpreadsheet size={12} />
@@ -280,8 +280,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         alignItems: 'center',
                         gap: '0.25rem',
                         padding: '0.4rem 0.6rem',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.15)',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--border-dim)',
                         borderRadius: 'var(--radius-sm)',
                         color: 'var(--text-primary)',
                         cursor: 'pointer',
@@ -291,10 +291,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     }}
                     title="JSONでエクスポート"
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                        e.currentTarget.style.background = 'var(--bg-surface-hover)';
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                        e.currentTarget.style.background = 'var(--bg-surface)';
                     }}
                 >
                     <FileJson size={12} />
@@ -308,8 +308,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         alignItems: 'center',
                         gap: '0.25rem',
                         padding: '0.4rem 0.6rem',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.15)',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--border-dim)',
                         borderRadius: 'var(--radius-sm)',
                         color: 'var(--text-primary)',
                         cursor: 'pointer',
@@ -319,10 +319,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     }}
                     title="サマリーをエクスポート"
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                        e.currentTarget.style.background = 'var(--bg-surface-hover)';
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                        e.currentTarget.style.background = 'var(--bg-surface)';
                     }}
                 >
                     <BarChart3 size={12} />
@@ -345,8 +345,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     flex: '1 1 150px',
                     minWidth: '120px',
                     padding: '0.4rem 0.6rem',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border-dim)',
                     borderRadius: 'var(--radius-sm)'
                 }}>
                     <Search size={14} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
@@ -375,8 +375,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     style={{
                         padding: '0.4rem 0.5rem',
                         fontSize: '0.8rem',
-                        background: '#1e293b',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'var(--input-bg)',
+                        border: '1px solid var(--border-dim)',
                         borderRadius: 'var(--radius-sm)',
                         color: 'var(--text-primary)',
                         flexShrink: 0,
@@ -384,9 +384,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         cursor: 'pointer'
                     }}
                 >
-                    <option value="all" style={{ background: '#1e293b', color: '#f8fafc' }}>種類 ▼</option>
-                    <option value="transaction" style={{ background: '#1e293b', color: '#f8fafc' }}>経費</option>
-                    <option value="payment" style={{ background: '#1e293b', color: '#f8fafc' }}>返済</option>
+                    <option value="all" style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}>種類 ▼</option>
+                    <option value="transaction" style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}>経費</option>
+                    <option value="payment" style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}>返済</option>
                 </select>
 
                 {/* User Filter */}
@@ -396,8 +396,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     style={{
                         padding: '0.4rem 0.5rem',
                         fontSize: '0.8rem',
-                        background: '#1e293b',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'var(--input-bg)',
+                        border: '1px solid var(--border-dim)',
                         borderRadius: 'var(--radius-sm)',
                         color: 'var(--text-primary)',
                         flexShrink: 0,
@@ -405,9 +405,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         cursor: 'pointer'
                     }}
                 >
-                    <option value="all" style={{ background: '#1e293b', color: '#f8fafc' }}>ユーザー ▼</option>
+                    <option value="all" style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}>ユーザー ▼</option>
                     {users.map(user => (
-                        <option key={user.id} value={user.id} style={{ background: '#1e293b', color: '#f8fafc' }}>{user.name}</option>
+                        <option key={user.id} value={user.id} style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}>{user.name}</option>
                     ))}
                 </select>
 
@@ -644,7 +644,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         return (
                             <div key={key} style={{
                                 padding: '1rem',
-                                background: 'rgba(255,255,255,0.05)',
+                                background: 'var(--bg-surface)',
                                 borderRadius: 'var(--radius-md)',
                                 borderLeft: `3px solid ${isPayment ? 'var(--success)' : 'var(--primary)'} `,
                             }}>
@@ -745,19 +745,19 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             padding: '1rem',
-                            background: 'rgba(255,255,255,0.02)',
+                            background: 'var(--bg-surface)',
                             borderRadius: 'var(--radius-md)',
                             borderLeft: `3px solid ${isPayment ? 'var(--success)' : 'var(--primary)'} `,
-                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            borderBottom: '1px solid var(--border-dim)',
                             position: 'relative',
                             transition: 'all 0.3s ease'
                         }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                e.currentTarget.style.background = 'var(--bg-surface-hover)';
                                 e.currentTarget.style.transform = 'translateX(4px)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                e.currentTarget.style.background = 'var(--bg-surface)';
                                 e.currentTarget.style.transform = 'translateX(0)';
                             }}
                         >
