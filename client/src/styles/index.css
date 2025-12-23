@@ -28,6 +28,12 @@
   --success: #4ade80;
   --primary: #8b5cf6;
 
+  /* Chart Variables */
+  --tooltip-bg: rgba(30, 41, 59, 0.95);
+  --tooltip-text: #f8fafc;
+  --tooltip-border: rgba(255, 255, 255, 0.1);
+  --grid-line: rgba(255, 255, 255, 0.1);
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
@@ -62,6 +68,12 @@
 
   --success: #16a34a;
   --primary: #7c3aed;
+
+  /* Chart Variables */
+  --tooltip-bg: rgba(255, 255, 255, 0.95);
+  --tooltip-text: #1e293b;
+  --tooltip-border: rgba(0, 0, 0, 0.1);
+  --grid-line: rgba(0, 0, 0, 0.1);
 }
 
 * {
