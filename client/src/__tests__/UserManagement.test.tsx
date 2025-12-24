@@ -164,7 +164,7 @@ describe('UserManagement Component', () => {
         });
 
         // Confirm deletion
-        const confirmButton = screen.getByText('削除');
+        const confirmButton = screen.getByText('削除する');
         await user.click(confirmButton);
 
         await waitFor(() => {
