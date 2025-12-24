@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { UserPlus, Users } from 'lucide-react';
 import type { User } from '../types';
 
@@ -138,36 +139,105 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onUpd
                 ))}
             </div>
 
-            {/* Custom Confirmation Modal */}
-            {deleteConfirmId && (
+            {/* Custom Confirmation Modal - Using Portal to render at document.body */}
+            {deleteConfirmId && createPortal(
                 <div style={{
                     position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0,0,0,0.5)',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.6)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1000,
-                    backdropFilter: 'blur(4px)'
+                    zIndex: 9999,
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    animation: 'fadeIn 0.2s ease-out'
                 }}>
-                    <div className="card" style={{ width: '300px', padding: '1.5rem', margin: 0 }}>
-                        <h4 style={{ marginBottom: '1rem' }}>ユーザーを削除しますか？</h4>
-                        <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
-                            本当にこのユーザーを削除しますか？この操作は元に戻せません。
+                    <div style={{
+                        background: 'var(--bg-secondary)',
+                        borderRadius: 'var(--radius-lg)',
+                        padding: '2rem',
+                        width: '100%',
+                        maxWidth: '380px',
+                        margin: '1rem',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                        border: '1px solid var(--glass-border)',
+                        animation: 'fadeIn 0.2s ease-out'
+                    }}>
+                        {/* Warning Icon */}
+                        <div style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '50%',
+                            background: 'rgba(239, 68, 68, 0.15)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 1.25rem',
+                            border: '2px solid rgba(239, 68, 68, 0.3)'
+                        }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" y1="11" x2="10" y2="17" />
+                                <line x1="14" y1="11" x2="14" y2="17" />
+                            </svg>
+                        </div>
+
+                        <h4 style={{
+                            marginBottom: '0.75rem',
+                            textAlign: 'center',
+                            fontSize: '1.25rem',
+                            fontWeight: 600,
+                            color: 'var(--text-primary)'
+                        }}>
+                            ユーザーを削除しますか？
+                        </h4>
+                        <p style={{
+                            marginBottom: '1.75rem',
+                            color: 'var(--text-secondary)',
+                            textAlign: 'center',
+                            fontSize: '0.95rem',
+                            lineHeight: 1.5
+                        }}>
+                            この操作は取り消せません。<br />
+                            関連するすべてのデータが削除されます。
                         </p>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button className="btn btn-secondary" onClick={() => setDeleteConfirmId(null)} style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => setDeleteConfirmId(null)}
+                                style={{
+                                    flex: 1,
+                                    minWidth: '120px',
+                                    whiteSpace: 'nowrap',
+                                    padding: '0.875rem 1rem',
+                                    textAlign: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
                                 キャンセル
                             </button>
-                            <button className="btn" onClick={confirmDelete} style={{ flex: 1, background: '#ef4444' }}>
-                                削除
+                            <button
+                                className="btn"
+                                onClick={confirmDelete}
+                                style={{
+                                    flex: 1,
+                                    minWidth: '120px',
+                                    whiteSpace: 'nowrap',
+                                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                                    padding: '0.875rem 1rem',
+                                    textAlign: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                削除する
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
