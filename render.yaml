@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: roommate-tracker-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.js
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: roommate-db
+          property: connectionString
+      - key: CLIENT_URL
+        value: https://roommate-tracker-client.onrender.com
+
+  - type: web
+    name: roommate-tracker-client
+    runtime: static
+    rootDir: client
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://roommate-tracker-api.onrender.com/api
+
+databases:
+  - name: roommate-db
+    databaseName: roommate_tracker
+    user: roommate_user
+    plan: free
