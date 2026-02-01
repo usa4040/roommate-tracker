@@ -3,7 +3,7 @@ services:
     name: roommate-tracker-api
     runtime: node
     rootDir: server
-    buildCommand: npm install && npm run build
+    buildCommand: NODE_ENV=development npm install && npm run build
     startCommand: node dist/server.js
     envVars:
       - key: JWT_SECRET
@@ -19,7 +19,7 @@ services:
     name: roommate-tracker-client
     runtime: static
     rootDir: client
-    buildCommand: cd client && npm install && npm run build
+    buildCommand: NODE_ENV=development cd client && npm install && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
