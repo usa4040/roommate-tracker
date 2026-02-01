@@ -13,10 +13,10 @@ services:
           name: roommate-db
           property: connectionString
       - key: CLIENT_URL
-        value: https://roommate-tracker-client.onrender.com
+        value: https://roommate-tracker-app.onrender.com
 
   - type: web
-    name: roommate-tracker-client
+    name: roommate-tracker-app
     runtime: static
     rootDir: client
     buildCommand: NODE_ENV=development npm install && npm run build
